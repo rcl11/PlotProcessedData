@@ -3,6 +3,7 @@
 #include <RAT/DS/EV.hh>
 
 #include <TH1D.h>
+#include <TH2D.h>
 #include <TCanvas.h>
 #include <TLegend.h>
 #include <TStyle.h>
@@ -44,6 +45,7 @@ void PlotNHitsFromRatds( const std::vector<std::string>& files )
       TCanvas* c1 = new TCanvas();
       TH1D* hNHits = new TH1D( "hNHits", "Number of hits per event", 100, 0.0, 100.0 );
       TH1D* hTotalQ = new TH1D( "hTotalQ", "hTotalQ", 500, 0.0, 5000.0 );
+      TH2D* hposxy = new TH2D( "hposxy", "hposxy", 200, 0.0, 2000.0, 200, 0.0, 2000.0 );
       
       RAT::DU::DSReader dsReader( files[0] );
 
@@ -55,10 +57,12 @@ void PlotNHitsFromRatds( const std::vector<std::string>& files )
               RAT::DS::EV rEV = rDS.GetEV(iEv);
               hNHits->Fill( rEV.GetNhits() );
               hTotalQ->Fill( rEV.GetTotalCharge() );
-              //RAT::DS::FitVertex rvertex = rEV.GetFitResult("waterFitter").GetVertex(0);
-              //if( rvertex.ContainsPosition() && rvertex.ValidPosition() ) {
-              //Make some plot of fit validity?
-             // }
+              if(rEV.FitResultExists("partialWaterFitter")){
+                  RAT::DS::FitVertex rvertex = rEV.GetFitResult("partialWaterFitter").GetVertex(0);
+                  if( rvertex.ContainsPosition() && rvertex.ValidPosition() ) {
+                      hposxy->Fill(rvertex.GetPosition().X(),rvertex.GetPosition().Y());
+                  }
+              }
             }
       }
       std::pair<std::string,std::string> run_info = ParseRunInfo(files[i]);
@@ -78,6 +82,7 @@ void PlotNHitsFromRatds( const std::vector<std::string>& files )
       c1->SaveAs(("nhits_"+outname+"_ntuple.pdf").c_str());
       c1->Clear();
       SetStyle();
+      
       TCanvas* c2 = new TCanvas();
       hTotalQ->SetFillStyle(1001);
       hTotalQ->SetFillColor(kMagenta);
@@ -99,10 +104,26 @@ void PlotNHitsFromRatds( const std::vector<std::string>& files )
       hTotalQ_vs_run->SetBinError(i+1,hTotalQ->GetMeanError());
       hTotalQ_vs_run->GetXaxis()->SetBinLabel(i+1,bin_label.c_str());
       
+      TCanvas* c3 = new TCanvas("c3","c3",600,500);
+      //gStyle->SetPalette(51,0);
+      //gStyle->SetNumberContours(999);
+      hposxy->GetYaxis()->SetTitle( "Y position" );
+      hposxy->GetXaxis()->SetTitle( "X position" );
+      hposxy->SetMarkerStyle(20);
+      hposxy->Draw("colzsame");
+      title_latex->DrawLatex(0.55, 0.94, ("Run: "+run_info.first + " Subrun: " + run_info.second).c_str()  );
+      c3->SetRightMargin(0.15);
+      c3->Update();
+      c3->SaveAs(("posxy_"+outname+"_ntuple.png").c_str());
+      c3->SaveAs(("posxy_"+outname+"_ntuple.pdf").c_str());
+      c3->Clear();
+      
       delete hNHits;
       delete hTotalQ;
+      delete hposxy;
       delete c1;
       delete c2;
+      delete c3;
   }
   SetStyle();
   TCanvas* c10 = new TCanvas("c10","c10",1000,400);
