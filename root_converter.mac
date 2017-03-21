@@ -1,0 +1,22 @@
+# File: inroot.mac
+# Brief: Macro showing how to load a root file and run convert into an ntuple
+#
+
+/rat/inroot/load_default 
+
+# Extra files can also be loaded by including extra lines, such as:
+#/rat/inroot/load input2.root
+
+/run/initialize
+
+# BEGIN EVENT LOOP
+/rat/proc count # An example processor
+/rat/procset update 5
+
+/rat/proclast outntuple
+
+# END EVENT LOOP
+
+/rat/inroot/read
+
+exit
