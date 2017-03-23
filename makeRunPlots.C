@@ -49,7 +49,8 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true )
       TCanvas* c1 = new TCanvas();
       TH1D* hNHits = new TH1D( "hNHits", "Number of hits per event", 100, 0.0, 100.0 );
       TH1D* hTotalQ = new TH1D( "hTotalQ", "hTotalQ", 500, 0.0, 5000.0 );
-      TH2D* hposxy = new TH2D( "hposxy", "hposxy", 200, 0.0, 1000.0, 200, 0.0, 1000.0 );
+      TH2D* hposxy = new TH2D( "hposxy", "hposxy", 100, -1000, 1000.0, 100, -1000, 1000.0 );
+      TH2D* hposrz = new TH2D( "hposrz", "hposrz", 100, 0, 1000.0, 100, -1000, 1000.0 );
       
       TFile *f = new TFile(files[i].c_str());
       TTree *t1 = (TTree*)f->Get("output");
@@ -59,7 +60,7 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true )
           Double_t charge;
           ULong64_t flag;
           ULong64_t applied_flag;
-          Double_t posx, posy;
+          Double_t posx, posy, posz;
           bool fit_valid;
           t1->SetBranchAddress("nhits",&nhits);
           t1->SetBranchAddress("q",&charge);
@@ -67,6 +68,7 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true )
           t1->SetBranchAddress("dcApplied",&applied_flag);
           t1->SetBranchAddress("posx",&posx);
           t1->SetBranchAddress("posy",&posy);
+          t1->SetBranchAddress("posz",&posz);
           t1->SetBranchAddress("fitValid",&fit_valid);
 
           Long64_t nentries = t1->GetEntries();
@@ -76,12 +78,14 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true )
              bool dataclean = !(flag & 0b10011111111111111);
              //Add data cleaning cut. Corresponds to "default", calculated using Morgan's dcflags.py tool 
              //bool dataclean = !(flag & 0b10000011111111111);
-             bool compatibility_cut = applied_flag & 0b10000011111111111; 
+             //bool compatibility_cut = applied_flag & 0b10000011111111111 == applied_flag; 
+             bool compatibility_cut = true; 
              if(dataclean && compatibility_cut) {
                 hNHits->Fill(nhits);
                 hTotalQ->Fill(charge);
                 if(fit_valid){
                     hposxy->Fill(posx,posy);
+                    hposrz->Fill(sqrt(posx*posx + posy*posy), posz);
                 }
              }
           }
@@ -103,6 +107,8 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true )
                           RAT::DS::FitVertex rvertex = rEV.GetFitResult("partialWaterFitter").GetVertex(0);
                           if( rvertex.ContainsPosition() && rvertex.ValidPosition() ) {
                               hposxy->Fill(rvertex.GetPosition().X(),rvertex.GetPosition().Y());
+                              hposrz->Fill(sqrt(rvertex.GetPosition().X()*rvertex.GetPosition().X()  + rvertex.GetPosition().Y()*rvertex.GetPosition().Y()), 
+                                    rvertex.GetPosition().Z());
                           }
                       }
                   }
@@ -164,12 +170,28 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true )
       c3->SaveAs(("posxy_"+outname+postfix+".pdf").c_str());
       c3->Clear();
       
+      TCanvas* c4 = new TCanvas("c4","c4",600,500);
+      //gStyle->SetPalette(51,0);
+      //gStyle->SetNumberContours(999);
+      hposrz->GetYaxis()->SetTitle( "Z position" );
+      hposrz->GetXaxis()->SetTitle( "R position" );
+      hposrz->SetMarkerStyle(20);
+      hposrz->Draw("colzsame");
+      title_latex->DrawLatex(0.55, 0.94, ("Run: "+run_info.first + " Subrun: " + run_info.second).c_str()  );
+      c4->SetRightMargin(0.15);
+      c4->Update();
+      c4->SaveAs(("posrz_"+outname+postfix+".png").c_str());
+      c4->SaveAs(("posrz_"+outname+postfix+".pdf").c_str());
+      c4->Clear();
+      
       delete hNHits;
       delete hTotalQ;
       delete hposxy;
+      delete hposrz;
       delete c1;
       delete c2;
       delete c3;
+      delete c4;
   }
   SetStyle();
   TCanvas* c10 = new TCanvas("c10","c10",1000,400);
