@@ -74,12 +74,10 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true )
           Long64_t nentries = t1->GetEntries();
           for (Long64_t j=0;j<nentries;j++) {
              t1->GetEntry(j);
-             //Add data cleaning cut. Corresponds to "default_apply", calculated using Morgan's dcflags.py tool 
-             bool dataclean = !(flag & 0b10011111111111111);
-             //Add data cleaning cut. Corresponds to "default", calculated using Morgan's dcflags.py tool 
-             //bool dataclean = !(flag & 0b10000011111111111);
-             //bool compatibility_cut = applied_flag & 0b10000011111111111 == applied_flag; 
-             bool compatibility_cut = true; 
+             //Playing around with data cleaning cut here. I believe we need analysis_mask once new processing is ready
+             //Add data cleaning cut. Corresponds to "default" but without prescale, calculated using Morgan's dcflags.py tool 
+             bool dataclean = !(flag & 0b10011111111111110);
+             bool compatibility_cut = (applied_flag & 0b10011111111111110) == 0b10011111111111110;
              if(dataclean && compatibility_cut) {
                 hNHits->Fill(nhits);
                 hTotalQ->Fill(charge);
