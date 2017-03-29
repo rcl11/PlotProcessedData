@@ -133,7 +133,7 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
                                     rvertex.GetPosition().Z());
                               hposx->Fill(rvertex.GetPosition().X());
                               hposy->Fill(rvertex.GetPosition().Y());
-                              hposz->Fill(rvertex.GetPosition().Y());
+                              hposz->Fill(rvertex.GetPosition().Z());
                               hposR->Fill(sqrt(rvertex.GetPosition().X()*rvertex.GetPosition().X()  + rvertex.GetPosition().Y()*rvertex.GetPosition().Y() + rvertex.GetPosition().Z()*rvertex.GetPosition().Z()) );
                           }
                       }

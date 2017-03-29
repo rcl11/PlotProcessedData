@@ -28,12 +28,14 @@ for filename in glob.glob(options.dirname+"/"+"*.png"):
         
     #run number    
     run_number = p.findall(filename)[0]
+    j = re.compile("_s([0-9]*)")
+    subrun_number = j.findall(filename)[0]
 
     q = re.compile("/(.*)_r")
     #plot type    
     plot_type = q.findall(filename)[0]
 
-    data['run number'] = run_number
+    data['run number'] = run_number+"_"+subrun_number
     data['plot type'] = plot_type
 
     json.dump(data,json_file)
