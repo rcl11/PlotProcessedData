@@ -4,13 +4,18 @@ import json
 import os
 import glob
 import re
+from optparse import OptionParser
 
-dir = "plots/"
 
+parser = OptionParser()
+parser.add_option("-d", "--directory", dest="dirname",
+                  help="Directory where the plots are kept")
+
+(options, args) = parser.parse_args()
 
 
 #Extract known information from filename
-for filename in glob.glob(dir+"*.png"):
+for filename in glob.glob(options.dirname+"/"+"*.png"):
     data = {}
     json_name = filename.replace(".png",".json")
     json_file = open(json_name, "w")

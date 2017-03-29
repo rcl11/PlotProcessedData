@@ -2,10 +2,20 @@
 
 import os
 import glob
+from optparse import OptionParser
 
-for filename in glob.glob("*[0-9].root"):
+
+parser = OptionParser()
+parser.add_option("-i", "--input", dest="dirname",
+                  help="Directory where the files to convert are kept")
+
+(options, args) = parser.parse_args()
+
+directory = str(options.dirname) + "/"
+
+for filename in glob.glob(directory+"/"+"*[0-9].root"):
     print filename
     filename = filename.replace(".root","")
-    if not os.path.exists(filename+"_ntuple.root"):
-        print 'rat -i /data/snoplus/OfficialProcessing/processed_6.2.3/%(filename)s.root -o /data/snoplus/OfficialProcessing/processed_6.2.3/%(filename)s_ntuple.root root_converter.mac' % vars()
-        os.system('rat -i /data/snoplus/OfficialProcessing/processed_6.2.3/%(filename)s.root -o /data/snoplus/OfficialProcessing/processed_6.2.3/%(filename)s_ntuple.root root_converter.mac' % vars()) 
+    if not os.path.exists(directory+filename+"_ntuple.root"):
+        print 'rat -i %(directory)s%(filename)s.root -o %(directory)s%(filename)s_ntuple.root scripts/root_converter.mac' % vars()
+        os.system('rat -i %(directory)s%(filename)s.root -o %(directory)s%(filename)s_ntuple.root scripts/root_converter.mac' % vars()) 

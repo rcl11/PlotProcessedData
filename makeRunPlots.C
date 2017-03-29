@@ -57,7 +57,10 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
       TH1D* hposR = new TH1D( "hposR", "hposR", 80, 0.0, 8000.0 );
       TH2D* hposxy = new TH2D( "hposxy", "hposxy", 160, -8000, 8000.0, 160, -8000, 8000.0 );
       TH2D* hposrz = new TH2D( "hposrz", "hposrz", 80, 0, 8000.0, 160, -8000, 8000.0 );
-      TH1D* hrpmt = new TH1D( "hrpmt", "hrpmt", 80, 0.0, 8000.0 );
+      TH1D* hrpmt = new TH1D( "hrpmt", "hrpmt", 100, 0.0, 10000.0 );
+      TH1D* hxpmt = new TH1D( "hxpmt", "hxpmt", 100, 0.0, 10000.0 );
+      TH1D* hypmt = new TH1D( "hypmt", "hypmt", 100, 0.0, 10000.0 );
+      TH1D* hzpmt = new TH1D( "hzpmt", "hzpmt", 100, 0.0, 10000.0 );
       
       TFile *f = new TFile(files[i].c_str());
       TTree *t1 = (TTree*)f->Get("output");
@@ -82,14 +85,10 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
           Long64_t nentries = t1->GetEntries();
           for (Long64_t j=0;j<nentries;j++) {
              t1->GetEntry(j);
-             //Playing around with data cleaning cut here. I believe we need analysis_mask once new processing is ready
-             //Add data cleaning cut. Corresponds to "default" but without prescale, calculated using Morgan's dcflags.py tool 
-             //bool dataclean = !(flag & 0b10011111111111110);
              //analysis_mask
              //bool dataclean = !(flag & 0b111111111111110);
              //analysis_mask without tpmuonfollowercut-short
              bool dataclean = !(flag & 0b11111111111110);
-             //bool compatibility_cut = (applied_flag & 0b10011111111111110) == 0b10011111111111110;
              //analysis_mask
              //bool compatibility_cut = (applied_flag & 0b111111111111110) == 0b111111111111110;
              //analysis_mask without tpmuonfollowercut-short
@@ -111,7 +110,7 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
       } else {
           RAT::DU::DSReader dsReader( files[i] );
           const RAT::DU::PMTInfo& pmtInfo = RAT::DU::Utility::Get()->GetPMTInfo();
-          //Add data cleaning cut. Note should possibly be changed to "analysis_mask", however I believe this requires reprocessing first?
+          //Add data cleaning cut. Note should possibly be changed to "analysis_mask" once bug is fixed with tpmuonfollowercut
           //ULong64_t rDataCleaningWord = RAT::GetDataCleaningWord( "analysis_mask" );
           //Temporary mask removing tpmuonfollowercut-short which has a bug for this production
           ULong64_t rDataCleaningWord = RAT::GetDataCleaningWord( "analysis_mask_temp" );
@@ -143,6 +142,9 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
                           TVector3 pmtpos = pmtInfo.GetPosition(calpmts.GetPMT(ipmt).GetID());
                           double pmt_r = pmtpos.Mag();
                           hrpmt->Fill(pmt_r);
+                          hxpmt->Fill(pmtpos.X());
+                          hypmt->Fill(pmtpos.Y());
+                          hzpmt->Fill(pmtpos.Z());
                       }
                   }
               }
@@ -153,7 +155,7 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
       std::string outname = run_info.first + "_" + run_info.second; 
       //Make some plots
       hNHits->SetFillStyle(1001);
-      hNHits->SetFillColor(TColor::GetColor(9, 114, 251));
+      hNHits->SetFillColor(TColor::GetColor(220, 24, 24));
       hNHits->GetYaxis()->SetTitle( "Events" );
       hNHits->GetXaxis()->SetTitle( "Number of hits" );
       hNHits->Draw("hist");
@@ -169,7 +171,7 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
       
       TCanvas* c2 = new TCanvas();
       hTotalQ->SetFillStyle(1001);
-      hTotalQ->SetFillColor(kMagenta);
+      hTotalQ->SetFillColor(TColor::GetColor(142, 24, 220));
       hTotalQ->GetYaxis()->SetTitle( "Events" );
       hTotalQ->GetXaxis()->SetTitle( "Total Charge" );
       hTotalQ->Draw("hist");
@@ -206,7 +208,7 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
       
       TCanvas* c4 = new TCanvas("c4","c4",600,500);
       hposrz->GetYaxis()->SetTitle( "Z position (mm)" );
-      hposrz->GetXaxis()->SetTitle( "R position (mm)" );
+      hposrz->GetXaxis()->SetTitle( "r = #sqrt{(x^2 + y^2)} position (mm)" );
       hposrz->SetMarkerStyle(20);
       hposrz->Draw("colzsame");
       title_latex->DrawLatex(0.55, 0.94, ("Run: "+run_info.first + " Subrun: " + run_info.second).c_str()  );
@@ -220,7 +222,7 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
       hposx->GetYaxis()->SetTitle( "Events" );
       hposx->GetXaxis()->SetTitle( "X Position (mm)" );
       hposx->SetFillStyle(1001);
-      hposx->SetFillColor(kGreen);
+      hposx->SetFillColor(TColor::GetColor(220, 24, 70));
       hposx->Draw("hist");
       title_latex->DrawLatex(0.55, 0.94, ("Run: "+run_info.first + " Subrun: " + run_info.second).c_str()  );
       c5->Update();
@@ -232,7 +234,7 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
       hposy->GetYaxis()->SetTitle( "Events" );
       hposy->GetXaxis()->SetTitle( "Y Position (mm)" );
       hposy->SetFillStyle(1001);
-      hposy->SetFillColor(kGreen);
+      hposy->SetFillColor(TColor::GetColor(24,220,57));
       hposy->Draw("hist");
       title_latex->DrawLatex(0.55, 0.94, ("Run: "+run_info.first + " Subrun: " + run_info.second).c_str()  );
       c6->Update();
@@ -244,7 +246,7 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
       hposz->GetYaxis()->SetTitle( "Events" );
       hposz->GetXaxis()->SetTitle( "Z Position (mm)" );
       hposz->SetFillStyle(1001);
-      hposz->SetFillColor(kCyan);
+      hposz->SetFillColor(TColor::GetColor(24,113,220));
       hposz->Draw("hist");
       title_latex->DrawLatex(0.55, 0.94, ("Run: "+run_info.first + " Subrun: " + run_info.second).c_str()  );
       c7->Update();
@@ -267,7 +269,7 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
       TCanvas* c9 = new TCanvas("c9","c9",600,500);
       if(!ntuple){
           hrpmt->GetYaxis()->SetTitle( "Events" );
-          hrpmt->GetXaxis()->SetTitle( "PMT R Position (mm)" );
+          hrpmt->GetXaxis()->SetTitle( "hit PMT R Position (mm)" );
           hrpmt->SetFillStyle(1001);
           hrpmt->SetFillColor(kOrange);
           hrpmt->Draw("hist");
@@ -276,6 +278,45 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
           c9->SaveAs((output_dir+"rpmt_"+outname+postfix+".png").c_str());
           c9->SaveAs((output_dir+"rpmt_"+outname+postfix+".pdf").c_str());
           c9->Clear();
+      }
+      TCanvas* c10 = new TCanvas("c10","c10",600,500);
+      if(!ntuple){
+          hxpmt->GetYaxis()->SetTitle( "Events" );
+          hxpmt->GetXaxis()->SetTitle( "hit PMT X Position (mm)" );
+          hxpmt->SetFillStyle(1001);
+          hxpmt->SetFillColor(TColor::GetColor(220, 24, 70));
+          hxpmt->Draw("hist");
+          title_latex->DrawLatex(0.55, 0.94, ("Run: "+run_info.first + " Subrun: " + run_info.second).c_str()  );
+          c10->Update();
+          c10->SaveAs((output_dir+"xpmt_"+outname+postfix+".png").c_str());
+          c10->SaveAs((output_dir+"xpmt_"+outname+postfix+".pdf").c_str());
+          c10->Clear();
+      }
+      TCanvas* c11 = new TCanvas("c11","c11",600,500);
+      if(!ntuple){
+          hypmt->GetYaxis()->SetTitle( "Events" );
+          hypmt->GetXaxis()->SetTitle( "hit PMT Y Position (mm)" );
+          hypmt->SetFillStyle(1001);
+          hypmt->SetFillColor(TColor::GetColor(24,220,57));
+          hypmt->Draw("hist");
+          title_latex->DrawLatex(0.55, 0.94, ("Run: "+run_info.first + " Subrun: " + run_info.second).c_str()  );
+          c11->Update();
+          c11->SaveAs((output_dir+"ypmt_"+outname+postfix+".png").c_str());
+          c11->SaveAs((output_dir+"ypmt_"+outname+postfix+".pdf").c_str());
+          c11->Clear();
+      }
+      TCanvas* c12 = new TCanvas("c12","c12",600,500);
+      if(!ntuple){
+          hzpmt->GetYaxis()->SetTitle( "Events" );
+          hzpmt->GetXaxis()->SetTitle( "hit PMT Z Position (mm)" );
+          hzpmt->SetFillStyle(1001);
+          hzpmt->SetFillColor(TColor::GetColor(24,113,220));
+          hzpmt->Draw("hist");
+          title_latex->DrawLatex(0.55, 0.94, ("Run: "+run_info.first + " Subrun: " + run_info.second).c_str()  );
+          c12->Update();
+          c12->SaveAs((output_dir+"zpmt_"+outname+postfix+".png").c_str());
+          c12->SaveAs((output_dir+"zpmt_"+outname+postfix+".pdf").c_str());
+          c12->Clear();
       }
       
       delete hNHits;
@@ -287,6 +328,7 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
       delete hposz;
       delete hposR;
       delete hrpmt;
+      delete hxpmt, hypmt, hzpmt;
       delete c1;
       delete c2;
       delete c3;
@@ -296,52 +338,55 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
       delete c7;
       delete c8;
       delete c9;
+      delete c10;
+      delete c11;
+      delete c12;
   }
   SetStyle();
-  TCanvas* c10 = new TCanvas("c10","c10",1000,400);
-  hNHits_vs_run->SetMarkerColor(TColor::GetColor(9, 114, 251));
+  TCanvas* c100 = new TCanvas("c100","c100",1000,400);
+  hNHits_vs_run->SetMarkerColor(TColor::GetColor(220, 24, 24));
   hNHits_vs_run->SetMarkerStyle(20);
-  hNHits_vs_run->SetLineColor(TColor::GetColor(9, 114, 251));
+  hNHits_vs_run->SetLineColor(TColor::GetColor(220, 24, 24));
   hNHits_vs_run->GetYaxis()->SetTitle( "Mean #Hits" );
   hNHits_vs_run->GetXaxis()->SetTitle( "Run ID" );
   hNHits_vs_run->GetXaxis()->SetTitleOffset(1.9);
   hNHits_vs_run->Draw("PE1");
-  c10->SetLeftMargin(0.1);
-  c10->SetBottomMargin(0.18);
-  c10->Update();
-  c10->SaveAs((output_dir+"nhits_vs_run_"+start_run+"_to_"+end_run+postfix+".png").c_str());
-  c10->SaveAs((output_dir+"nhits_vs_run_"+start_run+"_to_"+end_run+postfix+".pdf").c_str());
+  c100->SetLeftMargin(0.1);
+  c100->SetBottomMargin(0.18);
+  c100->Update();
+  c100->SaveAs((output_dir+"nhits_vs_run_"+start_run+"_to_"+end_run+postfix+".png").c_str());
+  c100->SaveAs((output_dir+"nhits_vs_run_"+start_run+"_to_"+end_run+postfix+".pdf").c_str());
   SetStyle();
-  TCanvas* c11 = new TCanvas("c11","c11",1000,400);
-  hTotalQ_vs_run->SetMarkerColor(kMagenta);
+  TCanvas* c101 = new TCanvas("c101","c101",1000,400);
+  hTotalQ_vs_run->SetMarkerColor(TColor::GetColor(142, 24, 220));
   hTotalQ_vs_run->SetMarkerStyle(20);
-  hTotalQ_vs_run->SetLineColor(kMagenta);
+  hTotalQ_vs_run->SetLineColor(TColor::GetColor(142, 24, 220));
   hTotalQ_vs_run->GetYaxis()->SetTitle( "Mean TotalQ" );
   hTotalQ_vs_run->GetXaxis()->SetTitle( "Run ID" );
   hTotalQ_vs_run->GetXaxis()->SetTitleOffset(1.9);
   hTotalQ_vs_run->Draw("PE1");
-  c11->SetLeftMargin(0.1);
-  c11->SetBottomMargin(0.18);
-  c11->Update();
-  c11->SaveAs((output_dir+"totalQ_vs_run_"+start_run+"_to_"+end_run+postfix+".png").c_str());
-  c11->SaveAs((output_dir+"totalQ_vs_run_"+start_run+"_to_"+end_run+postfix+".pdf").c_str());
+  c101->SetLeftMargin(0.1);
+  c101->SetBottomMargin(0.18);
+  c101->Update();
+  c101->SaveAs((output_dir+"totalQ_vs_run_"+start_run+"_to_"+end_run+postfix+".png").c_str());
+  c101->SaveAs((output_dir+"totalQ_vs_run_"+start_run+"_to_"+end_run+postfix+".pdf").c_str());
   SetStyle();
-  TCanvas* c12 = new TCanvas("c12","c12",1000,400);
-  hNEvents_vs_run->SetMarkerColor(kRed);
+  TCanvas* c102 = new TCanvas("c102","c102",1000,400);
+  hNEvents_vs_run->SetMarkerColor(kGreen);
   hNEvents_vs_run->SetMarkerStyle(20);
-  hNEvents_vs_run->SetLineColor(kRed);
+  hNEvents_vs_run->SetLineColor(kGreen);
   hNEvents_vs_run->GetYaxis()->SetTitle( "# Events" );
   hNEvents_vs_run->GetXaxis()->SetTitle( "Run ID" );
   hNEvents_vs_run->GetXaxis()->SetTitleOffset(1.9);
   hNEvents_vs_run->Draw("PE1");
-  c12->SetLeftMargin(0.1);
-  c12->SetBottomMargin(0.18);
-  c12->Update();
-  c12->SaveAs((output_dir+"nevents_vs_run_"+start_run+"_to_"+end_run+postfix+".png").c_str());
-  c12->SaveAs((output_dir+"nevents_vs_run_"+start_run+"_to_"+end_run+postfix+".pdf").c_str());
-  delete c10;
-  delete c11;
-  delete c12;
+  c102->SetLeftMargin(0.1);
+  c102->SetBottomMargin(0.18);
+  c102->Update();
+  c102->SaveAs((output_dir+"nevents_vs_run_"+start_run+"_to_"+end_run+postfix+".png").c_str());
+  c102->SaveAs((output_dir+"nevents_vs_run_"+start_run+"_to_"+end_run+postfix+".pdf").c_str());
+  delete c100;
+  delete c101;
+  delete c102;
   delete hNHits_vs_run;
   delete hTotalQ_vs_run;
   delete hNEvents_vs_run;
