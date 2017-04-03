@@ -4,6 +4,7 @@
 #include <RAT/DataCleaningUtility.hh>
 #include <RAT/DU/Utility.hh>
 #include <RAT/DS/Meta.hh>
+#include <RAT/BitManip.hh>
 
 #include <TH1D.h>
 #include <TH2D.h>
@@ -18,6 +19,7 @@
 #include <TCut.h>
 #include <string>
 #include <fstream>
+#include <bitset>
 
 #include "styles.h"
 
@@ -50,17 +52,31 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
       SetStyle();
       TCanvas* c1 = new TCanvas();
       TH1D* hNHits = new TH1D( "hNHits", "Number of hits per event", 100, 0.0, 100.0 );
+      TH1D* hNHits_log = new TH1D( "hNHits_log", "Number of hits per event on log scale", 10000, 0.0, 10000.0 );
       TH1D* hTotalQ = new TH1D( "hTotalQ", "hTotalQ", 1000, 0.0, 10000.0 );
-      TH1D* hposx = new TH1D( "hposx", "hposx", 80, 0.0, 8000.0 );
-      TH1D* hposy = new TH1D( "hposy", "hposy", 80, 0.0, 8000.0 );
-      TH1D* hposz = new TH1D( "hposz", "hposz", 80, 0.0, 8000.0 );
-      TH1D* hposR = new TH1D( "hposR", "hposR", 80, 0.0, 8000.0 );
-      TH2D* hposxy = new TH2D( "hposxy", "hposxy", 160, -8000, 8000.0, 160, -8000, 8000.0 );
-      TH2D* hposrz = new TH2D( "hposrz", "hposrz", 80, 0, 8000.0, 160, -8000, 8000.0 );
-      TH1D* hrpmt = new TH1D( "hrpmt", "hrpmt", 100, 0.0, 10000.0 );
-      TH1D* hxpmt = new TH1D( "hxpmt", "hxpmt", 100, 0.0, 10000.0 );
-      TH1D* hypmt = new TH1D( "hypmt", "hypmt", 100, 0.0, 10000.0 );
-      TH1D* hzpmt = new TH1D( "hzpmt", "hzpmt", 100, 0.0, 10000.0 );
+      TH1D* hNHits_pulseGT = new TH1D( "hNHits_pulseGT", "Number of hits per event", 100, 0.0, 100.0 );
+      TH1D* hTotalQ_pulseGT = new TH1D( "hTotalQ_pulseGT", "hTotalQ_pulseGT", 1000, 0.0, 10000.0 );
+      TH1D* hNHits_N100M = new TH1D( "hNHits_N100M", "Number of hits per event", 100, 0.0, 100.0 );
+      TH1D* hTotalQ_N100M = new TH1D( "hTotalQ_N100M", "hTotalQ_N100M", 1000, 0.0, 10000.0 );
+      TH1D* hNHits_N100H = new TH1D( "hNHits_N100H", "Number of hits per event", 100, 0.0, 100.0 );
+      TH1D* hTotalQ_N100H = new TH1D( "hTotalQ_N100H", "hTotalQ_N100H", 1000, 0.0, 10000.0 );
+      TH1D* hNHits_N20 = new TH1D( "hNHits_N20", "Number of hits per event", 100, 0.0, 100.0 );
+      TH1D* hTotalQ_N20 = new TH1D( "hTotalQ_N20", "hTotalQ_N20", 1000, 0.0, 10000.0 );
+      TH1D* hNHits_ESUMH = new TH1D( "hNHits_ESUMH", "Number of hits per event", 100, 0.0, 100.0 );
+      TH1D* hTotalQ_ESUMH = new TH1D( "hTotalQ_ESUMH", "hTotalQ_ESUMH", 1000, 0.0, 10000.0 );
+      TH1D* hNHits_OWLEH = new TH1D( "hNHits_OWLEH", "Number of hits per event", 100, 0.0, 100.0 );
+      TH1D* hTotalQ_OWLEH = new TH1D( "hTotalQ_OWLEH", "hTotalQ_OWLEH", 1000, 0.0, 10000.0 );
+      TH1D* hposx = new TH1D( "hposx", "Fitted x position", 160, -8000.0, 8000.0 );
+      TH1D* hposy = new TH1D( "hposy", "Fitted y position", 160, -8000.0, 8000.0 );
+      TH1D* hposz = new TH1D( "hposz", "Fitted z position", 160, -8000.0, 8000.0 );
+      TH1D* hposR = new TH1D( "hposR", "Fitted R position", 80, 0.0, 8000.0 );
+      TH2D* hposxy = new TH2D( "hposxy", "Fitted X vs Y", 160, -8000, 8000.0, 160, -8000, 8000.0 );
+      TH2D* hposrz = new TH2D( "hposrz", "Fitted r vs z", 80, 0, 8000.0, 160, -8000, 8000.0 );
+      TH1D* hrpmt = new TH1D( "hrpmt", "Hit PMT R", 100, 0.0, 10000.0 );
+      TH1D* hxpmt = new TH1D( "hxpmt", "Hit PMT X", 100, -10000.0, 10000.0 );
+      TH1D* hypmt = new TH1D( "hypmt", "Hit PMT Y", 100, -10000.0, 10000.0 );
+      TH1D* hzpmt = new TH1D( "hzpmt", "Hit PMT Z", 100, -10000.0, 10000.0 );
+      TH1D* htpmt = new TH1D( "htpmt", "Hit PMT raw time", 1000, -500.0, 500.0 );
       
       TFile *f = new TFile(files[i].c_str());
       TTree *t1 = (TTree*)f->Get("output");
@@ -73,6 +89,7 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
           ULong64_t applied_flag;
           Double_t posx, posy, posz;
           bool fit_valid;
+          Int_t triggerWord;
           t1->SetBranchAddress("nhits",&nhits);
           t1->SetBranchAddress("q",&charge);
           t1->SetBranchAddress("dcFlagged",&flag);
@@ -81,6 +98,7 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
           t1->SetBranchAddress("posy",&posy);
           t1->SetBranchAddress("posz",&posz);
           t1->SetBranchAddress("fitValid",&fit_valid);
+          t1->SetBranchAddress("triggerWord",&triggerWord);
 
           Long64_t nentries = t1->GetEntries();
           for (Long64_t j=0;j<nentries;j++) {
@@ -95,7 +113,36 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
              bool compatibility_cut = (applied_flag & 0b11111111111110) == 0b11111111111110;
              if(dataclean && compatibility_cut) {
                 hNHits->Fill(nhits);
+                hNHits_log->Fill(nhits);
                 hTotalQ->Fill(charge);
+                //Fill some nhits and total q plots for different triggers fired
+                std::bitset<32> bits = std::bitset<32>(triggerWord);
+                //Numbers to test taken from RAT documentation
+                if(bits.test(10)){
+                    hNHits_pulseGT->Fill(nhits);
+                    hTotalQ_pulseGT->Fill(charge);
+                }
+                if(bits.test(1)){
+                    hNHits_N100M->Fill(nhits);
+                    hTotalQ_N100M->Fill(charge);
+                }
+                if(bits.test(2)){
+                    hNHits_N100H->Fill(nhits);
+                    hTotalQ_N100H->Fill(charge);
+                }
+                if(bits.test(3)){
+                    hNHits_N20->Fill(nhits);
+                    hTotalQ_N20->Fill(charge);
+                }
+                if(bits.test(6)){
+                    hNHits_ESUMH->Fill(nhits);
+                    hTotalQ_ESUMH->Fill(charge);
+                }
+                if(bits.test(9)){
+                    hNHits_OWLEH->Fill(nhits);
+                    hTotalQ_OWLEH->Fill(charge);
+                }
+                
                 if(fit_valid){
                     hposxy->Fill(posx,posy);
                     hposrz->Fill(sqrt(posx*posx + posy*posy), posz);
@@ -124,7 +171,35 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
                   if(RAT::EventIsClean( rEV, rMeta, rDataCleaningWord )){
                       n_events++;
                       hNHits->Fill( rEV.GetNhits() );
+                      hNHits_log->Fill( rEV.GetNhits() );
                       hTotalQ->Fill( rEV.GetTotalCharge() );
+                      //Fill some nhits and total q plots for different triggers fired
+                      //std::cout << std::bitset<32>(rEV.GetTrigType())/*.to_string()*/ << std::endl;
+                      if(RAT::BitManip::TestBit(rEV.GetTrigType(), RAT::DU::TrigBits::PulseGT)){
+                          hNHits_pulseGT->Fill(rEV.GetNhits()); 
+                          hTotalQ_pulseGT->Fill( rEV.GetTotalCharge() );
+                      }
+                      if(RAT::BitManip::TestBit(rEV.GetTrigType(), RAT::DU::TrigBits::N100Med)){
+                          hNHits_N100M->Fill(rEV.GetNhits()); 
+                          hTotalQ_N100M->Fill( rEV.GetTotalCharge() );
+                      }
+                      if(RAT::BitManip::TestBit(rEV.GetTrigType(), RAT::DU::TrigBits::N100High)){
+                          hNHits_N100H->Fill(rEV.GetNhits()); 
+                          hTotalQ_N100H->Fill( rEV.GetTotalCharge() );
+                      }
+                      if(RAT::BitManip::TestBit(rEV.GetTrigType(), RAT::DU::TrigBits::N20)){
+                          hNHits_N20->Fill(rEV.GetNhits()); 
+                          hTotalQ_N20->Fill( rEV.GetTotalCharge() );
+                      }
+                      if(RAT::BitManip::TestBit(rEV.GetTrigType(), RAT::DU::TrigBits::ESHigh)){
+                          hNHits_ESUMH->Fill(rEV.GetNhits()); 
+                          hTotalQ_ESUMH->Fill( rEV.GetTotalCharge() );
+                      }
+                      if(RAT::BitManip::TestBit(rEV.GetTrigType(), RAT::DU::TrigBits::OWLESHigh)){
+                          hNHits_OWLEH->Fill(rEV.GetNhits()); 
+                          hTotalQ_OWLEH->Fill( rEV.GetTotalCharge() );
+                      }
+                      
                       if(rEV.FitResultExists("partialWaterFitter") && rEV.GetFitResult("partialWaterFitter").GetValid()){
                           RAT::DS::FitVertex rvertex = rEV.GetFitResult("partialWaterFitter").GetVertex(0);
                           if( rvertex.ContainsPosition() && rvertex.ValidPosition() ) {
@@ -145,6 +220,7 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
                           hxpmt->Fill(pmtpos.X());
                           hypmt->Fill(pmtpos.Y());
                           hzpmt->Fill(pmtpos.Z());
+                          htpmt->Fill((calpmts.GetPMT(ipmt)).GetTime());
                       }
                   }
               }
@@ -166,6 +242,10 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
       c1->Update();
       c1->SaveAs((output_dir+"nhits_"+outname+postfix+".png").c_str());
       c1->SaveAs((output_dir+"nhits_"+outname+postfix+".pdf").c_str());
+      c1->SetLogx();
+      c1->SetLogy();
+      c1->SaveAs((output_dir+"nhits_log_"+outname+postfix+".png").c_str());
+      c1->SaveAs((output_dir+"nhits_log_"+outname+postfix+".pdf").c_str());
       c1->Clear();
       SetStyle();
       
@@ -181,8 +261,164 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
       c2->SaveAs((output_dir+"totalQ_"+outname+postfix+".pdf").c_str());
       c2->Clear();
       
-      hNHits_vs_run->Fill(i, hNHits->GetMean());
-      hNHits_vs_run->SetBinError(i+1,hNHits->GetMeanError());
+      SetStyle();
+      TCanvas* c1a = new TCanvas();
+      hNHits_pulseGT->SetFillStyle(1001);
+      hNHits_pulseGT->SetFillColor(TColor::GetColor(220, 24, 24));
+      hNHits_pulseGT->GetYaxis()->SetTitle( "Events" );
+      hNHits_pulseGT->GetXaxis()->SetTitle( "Number of hits" );
+      hNHits_pulseGT->Draw("hist");
+      title_latex->DrawLatex(0.55, 0.94, ("Run: "+run_info.first + " Subrun: " + run_info.second).c_str()  );
+      c1a->Update();
+      c1a->SaveAs((output_dir+"nhits_pulseGT_"+outname+postfix+".png").c_str());
+      c1a->SaveAs((output_dir+"nhits_pulseGT_"+outname+postfix+".pdf").c_str());
+      c1a->Clear();
+      
+      SetStyle();
+      TCanvas* c2a = new TCanvas();
+      hTotalQ_pulseGT->SetFillStyle(1001);
+      hTotalQ_pulseGT->SetFillColor(TColor::GetColor(142, 24, 220));
+      hTotalQ_pulseGT->GetYaxis()->SetTitle( "Events" );
+      hTotalQ_pulseGT->GetXaxis()->SetTitle( "Total Charge" );
+      hTotalQ_pulseGT->Draw("hist");
+      title_latex->DrawLatex(0.55, 0.94, ("Run: "+run_info.first + " Subrun: " + run_info.second).c_str()  );
+      c2a->Update();
+      c2a->SaveAs((output_dir+"totalQ_pulseGT_"+outname+postfix+".png").c_str());
+      c2a->SaveAs((output_dir+"totalQ_pulseGT_"+outname+postfix+".pdf").c_str());
+      c2a->Clear();
+      
+      SetStyle();
+      TCanvas* c1b = new TCanvas();
+      hNHits_N100M->SetFillStyle(1001);
+      hNHits_N100M->SetFillColor(TColor::GetColor(220, 24, 24));
+      hNHits_N100M->GetYaxis()->SetTitle( "Events" );
+      hNHits_N100M->GetXaxis()->SetTitle( "Number of hits" );
+      hNHits_N100M->Draw("hist");
+      title_latex->DrawLatex(0.55, 0.94, ("Run: "+run_info.first + " Subrun: " + run_info.second).c_str()  );
+      c1b->Update();
+      c1b->SaveAs((output_dir+"nhits_N100M_"+outname+postfix+".png").c_str());
+      c1b->SaveAs((output_dir+"nhits_N100M_"+outname+postfix+".pdf").c_str());
+      c1b->Clear();
+      
+      SetStyle();
+      TCanvas* c2b = new TCanvas();
+      hTotalQ_N100M->SetFillStyle(1001);
+      hTotalQ_N100M->SetFillColor(TColor::GetColor(142, 24, 220));
+      hTotalQ_N100M->GetYaxis()->SetTitle( "Events" );
+      hTotalQ_N100M->GetXaxis()->SetTitle( "Total Charge" );
+      hTotalQ_N100M->Draw("hist");
+      title_latex->DrawLatex(0.55, 0.94, ("Run: "+run_info.first + " Subrun: " + run_info.second).c_str()  );
+      c2b->Update();
+      c2b->SaveAs((output_dir+"totalQ_N100M_"+outname+postfix+".png").c_str());
+      c2b->SaveAs((output_dir+"totalQ_N100M_"+outname+postfix+".pdf").c_str());
+      c2b->Clear();
+      
+      SetStyle();
+      TCanvas* c1c = new TCanvas();
+      hNHits_N100H->SetFillStyle(1001);
+      hNHits_N100H->SetFillColor(TColor::GetColor(220, 24, 24));
+      hNHits_N100H->GetYaxis()->SetTitle( "Events" );
+      hNHits_N100H->GetXaxis()->SetTitle( "Number of hits" );
+      hNHits_N100H->Draw("hist");
+      title_latex->DrawLatex(0.55, 0.94, ("Run: "+run_info.first + " Subrun: " + run_info.second).c_str()  );
+      c1c->Update();
+      c1c->SaveAs((output_dir+"nhits_N100H_"+outname+postfix+".png").c_str());
+      c1c->SaveAs((output_dir+"nhits_N100H_"+outname+postfix+".pdf").c_str());
+      c1c->Clear();
+      
+      SetStyle();
+      TCanvas* c2c = new TCanvas();
+      hTotalQ_N100H->SetFillStyle(1001);
+      hTotalQ_N100H->SetFillColor(TColor::GetColor(142, 24, 220));
+      hTotalQ_N100H->GetYaxis()->SetTitle( "Events" );
+      hTotalQ_N100H->GetXaxis()->SetTitle( "Total Charge" );
+      hTotalQ_N100H->Draw("hist");
+      title_latex->DrawLatex(0.55, 0.94, ("Run: "+run_info.first + " Subrun: " + run_info.second).c_str()  );
+      c2c->Update();
+      c2c->SaveAs((output_dir+"totalQ_N100H_"+outname+postfix+".png").c_str());
+      c2c->SaveAs((output_dir+"totalQ_N100H_"+outname+postfix+".pdf").c_str());
+      c2c->Clear();
+      
+      SetStyle();
+      TCanvas* c1d = new TCanvas();
+      hNHits_N20->SetFillStyle(1001);
+      hNHits_N20->SetFillColor(TColor::GetColor(220, 24, 24));
+      hNHits_N20->GetYaxis()->SetTitle( "Events" );
+      hNHits_N20->GetXaxis()->SetTitle( "Number of hits" );
+      hNHits_N20->Draw("hist");
+      title_latex->DrawLatex(0.55, 0.94, ("Run: "+run_info.first + " Subrun: " + run_info.second).c_str()  );
+      c1d->Update();
+      c1d->SaveAs((output_dir+"nhits_N20_"+outname+postfix+".png").c_str());
+      c1d->SaveAs((output_dir+"nhits_N20_"+outname+postfix+".pdf").c_str());
+      c1d->Clear();
+      
+      SetStyle();
+      TCanvas* c2d = new TCanvas();
+      hTotalQ_N20->SetFillStyle(1001);
+      hTotalQ_N20->SetFillColor(TColor::GetColor(142, 24, 220));
+      hTotalQ_N20->GetYaxis()->SetTitle( "Events" );
+      hTotalQ_N20->GetXaxis()->SetTitle( "Total Charge" );
+      hTotalQ_N20->Draw("hist");
+      title_latex->DrawLatex(0.55, 0.94, ("Run: "+run_info.first + " Subrun: " + run_info.second).c_str()  );
+      c2d->Update();
+      c2d->SaveAs((output_dir+"totalQ_N20_"+outname+postfix+".png").c_str());
+      c2d->SaveAs((output_dir+"totalQ_N20_"+outname+postfix+".pdf").c_str());
+      c2d->Clear();
+      
+      SetStyle();
+      TCanvas* c1e = new TCanvas();
+      hNHits_ESUMH->SetFillStyle(1001);
+      hNHits_ESUMH->SetFillColor(TColor::GetColor(220, 24, 24));
+      hNHits_ESUMH->GetYaxis()->SetTitle( "Events" );
+      hNHits_ESUMH->GetXaxis()->SetTitle( "Number of hits" );
+      hNHits_ESUMH->Draw("hist");
+      title_latex->DrawLatex(0.55, 0.94, ("Run: "+run_info.first + " Subrun: " + run_info.second).c_str()  );
+      c1e->Update();
+      c1e->SaveAs((output_dir+"nhits_ESUMH_"+outname+postfix+".png").c_str());
+      c1e->SaveAs((output_dir+"nhits_ESUMH_"+outname+postfix+".pdf").c_str());
+      c1e->Clear();
+      
+      SetStyle();
+      TCanvas* c2e = new TCanvas();
+      hTotalQ_ESUMH->SetFillStyle(1001);
+      hTotalQ_ESUMH->SetFillColor(TColor::GetColor(142, 24, 220));
+      hTotalQ_ESUMH->GetYaxis()->SetTitle( "Events" );
+      hTotalQ_ESUMH->GetXaxis()->SetTitle( "Total Charge" );
+      hTotalQ_ESUMH->Draw("hist");
+      title_latex->DrawLatex(0.55, 0.94, ("Run: "+run_info.first + " Subrun: " + run_info.second).c_str()  );
+      c2e->Update();
+      c2e->SaveAs((output_dir+"totalQ_ESUMH_"+outname+postfix+".png").c_str());
+      c2e->SaveAs((output_dir+"totalQ_ESUMH_"+outname+postfix+".pdf").c_str());
+      c2e->Clear();
+      
+      SetStyle();
+      TCanvas* c1f = new TCanvas();
+      hNHits_OWLEH->SetFillStyle(1001);
+      hNHits_OWLEH->SetFillColor(TColor::GetColor(220, 24, 24));
+      hNHits_OWLEH->GetYaxis()->SetTitle( "Events" );
+      hNHits_OWLEH->GetXaxis()->SetTitle( "Number of hits" );
+      hNHits_OWLEH->Draw("hist");
+      title_latex->DrawLatex(0.55, 0.94, ("Run: "+run_info.first + " Subrun: " + run_info.second).c_str()  );
+      c1f->Update();
+      c1f->SaveAs((output_dir+"nhits_OWLEH_"+outname+postfix+".png").c_str());
+      c1f->SaveAs((output_dir+"nhits_OWLEH_"+outname+postfix+".pdf").c_str());
+      c1f->Clear();
+      
+      SetStyle();
+      TCanvas* c2f = new TCanvas();
+      hTotalQ_OWLEH->SetFillStyle(1001);
+      hTotalQ_OWLEH->SetFillColor(TColor::GetColor(142, 24, 220));
+      hTotalQ_OWLEH->GetYaxis()->SetTitle( "Events" );
+      hTotalQ_OWLEH->GetXaxis()->SetTitle( "Total Charge" );
+      hTotalQ_OWLEH->Draw("hist");
+      title_latex->DrawLatex(0.55, 0.94, ("Run: "+run_info.first + " Subrun: " + run_info.second).c_str()  );
+      c2f->Update();
+      c2f->SaveAs((output_dir+"totalQ_OWLEH_"+outname+postfix+".png").c_str());
+      c2f->SaveAs((output_dir+"totalQ_OWLEH_"+outname+postfix+".pdf").c_str());
+      c2f->Clear();
+      
+      hNHits_vs_run->Fill(i, hNHits_log->GetMean());
+      hNHits_vs_run->SetBinError(i+1,hNHits_log->GetMeanError());
       std::string bin_label = run_info.first;
       if(i==0) start_run = bin_label;
       if(i==files.size()-1) end_run = bin_label;
@@ -318,9 +554,23 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
           c12->SaveAs((output_dir+"zpmt_"+outname+postfix+".pdf").c_str());
           c12->Clear();
       }
+      TCanvas* c13 = new TCanvas("c13","c13",600,500);
+      if(!ntuple){
+          htpmt->GetYaxis()->SetTitle( "Events" );
+          htpmt->GetXaxis()->SetTitle( "hit PMT raw time (ns)" );
+          htpmt->SetFillStyle(1001);
+          htpmt->SetFillColor(TColor::GetColor(76, 220, 215));
+          htpmt->Draw("hist");
+          title_latex->DrawLatex(0.55, 0.94, ("Run: "+run_info.first + " Subrun: " + run_info.second).c_str()  );
+          c13->Update();
+          c13->SaveAs((output_dir+"tpmt_"+outname+postfix+".png").c_str());
+          c13->SaveAs((output_dir+"tpmt_"+outname+postfix+".pdf").c_str());
+          c13->Clear();
+      }
       
-      delete hNHits;
-      delete hTotalQ;
+      
+      delete hNHits, hNHits_pulseGT, hNHits_N100M, hNHits_N100H, hNHits_N20, hNHits_ESUMH, hNHits_OWLEH;
+      delete hTotalQ, hTotalQ_pulseGT, hTotalQ_N100M, hTotalQ_N100H, hTotalQ_N20, hTotalQ_ESUMH, hTotalQ_OWLEH;
       delete hposxy;
       delete hposrz;
       delete hposx;
@@ -328,9 +578,9 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
       delete hposz;
       delete hposR;
       delete hrpmt;
-      delete hxpmt, hypmt, hzpmt;
-      delete c1;
-      delete c2;
+      delete hxpmt, hypmt, hzpmt, htpmt;
+      delete c1, c1a, c1b, c1c, c1d, c1e, c1f;
+      delete c2, c2a, c2b, c2c, c2d, c2e, c2f;
       delete c3;
       delete c4;
       delete c5;
@@ -341,6 +591,7 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
       delete c10;
       delete c11;
       delete c12;
+      delete c13;
   }
   SetStyle();
   TCanvas* c100 = new TCanvas("c100","c100",1000,400);
