@@ -28,6 +28,8 @@ nice_labels = {
     'xpmt' : 'PMT x position',
     'ypmt' : 'PMT y position',
     'zpmt' : 'PMT z position',
+    'fitValid' : 'Fit validity',
+    'itr' : 'ITR',
 }
 
 #Extract known information from filename

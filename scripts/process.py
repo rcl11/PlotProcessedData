@@ -48,8 +48,8 @@ for run_num in interesting_runs:
        
         script.write("cd "+rat_dir+"\n")
         script.write("source "+rat_env+"\n")
-        script.write('rat -b postgres://snoplus:dontestopmenow@pgsql.snopl.us:5400/ratdb -i {0}/SNOP_00000{1}_{2}.l2.zdab mac/processing/partial_water/first_pass_data_cleaning.mac\n'.format(input_dir, run_num, subrun_num)) 
-        script.write('rat -b postgres://snoplus:dontestopmenow@pgsql.snopl.us:5400/ratdb -i {0}/SNOP_00000{1}_{2}.l2.zdab -o {3}/Processing_r{1}_s{2}_p000.root mac/processing/partial_water/processing.mac\n'.format(input_dir, run_num, subrun_num, output_dir))
+        script.write('rat -b postgres://snoplus:dontestopmenow@pgsql.snopl.us:5400/ratdb -i {0}/SNOP_00000{1}_{2}.l2.zdab mac/processing/water/first_pass_data_cleaning.mac\n'.format(input_dir, run_num, subrun_num)) 
+        script.write('rat -b postgres://snoplus:dontestopmenow@pgsql.snopl.us:5400/ratdb -i {0}/SNOP_00000{1}_{2}.l2.zdab -o {3}/Processing_r{1}_s{2}_p000 mac/processing/water/processing.mac\n'.format(input_dir, run_num, subrun_num, output_dir))
         script.close()
 
         if submit:
