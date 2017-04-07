@@ -1,6 +1,7 @@
 #include <RAT/DU/DSReader.hh>
 #include <RAT/DS/Entry.hh>
 #include <RAT/DS/EV.hh>
+#include <RAT/DS/UniversalTime.hh>
 #include <RAT/DataCleaningUtility.hh>
 #include <RAT/DU/Utility.hh>
 #include <RAT/DS/Meta.hh>
@@ -44,9 +45,11 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
   TH1D* hNHits_vs_run = new TH1D( "hNHits_vs_run", "Mean number of hits per run", files.size(), 0.0, files.size() );
   TH1D* hTotalQ_vs_run = new TH1D( "hTotalQ_vs_run", "Mean total charge per run", files.size(), 0.0, files.size() );
   TH1D* hNEvents_vs_run = new TH1D( "hNEvents_vs_run", "Number of events per run", files.size(), 0.0, files.size() );
+  TH1D* hNEventsnorm_vs_run = new TH1D( "hNEventsnorm_vs_run", "Normalised number of events per run", files.size(), 0.0, files.size() );
   std::string start_run;
   std::string end_run;
   std::string postfix = "";
+  double run_duration;
   if(ntuple) postfix = "_ntuple";
   for(unsigned i=0; i<files.size(); ++i){
       
@@ -76,8 +79,9 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
       TH1D* hposy = new TH1D( "hposy", "Fitted y position", 160, -8000.0, 8000.0 );
       TH1D* hposz = new TH1D( "hposz", "Fitted z position", 160, -8000.0, 8000.0 );
       TH1D* hposR = new TH1D( "hposR", "Fitted R position", 80, 0.0, 8000.0 );
+      TH1D* hposR3 = new TH1D( "hposR3", "Fitted (R/Rav) cubed position", 30, 0.0, 1.5 );
       TH2D* hposxy = new TH2D( "hposxy", "Fitted X vs Y", 160, -8000, 8000.0, 160, -8000, 8000.0 );
-      TH2D* hposrz = new TH2D( "hposrz", "Fitted r vs z", 80, 0, 8000.0, 160, -8000, 8000.0 );
+      TH2D* hposRz = new TH2D( "hposRz", "Fitted R vs z", 80, 0, 8000.0, 160, -8000, 8000.0 );
       TH1D* hrpmt = new TH1D( "hrpmt", "Hit PMT R", 100, 0.0, 10000.0 );
       TH1D* hxpmt = new TH1D( "hxpmt", "Hit PMT X", 100, -10000.0, 10000.0 );
       TH1D* hypmt = new TH1D( "hypmt", "Hit PMT Y", 100, -10000.0, 10000.0 );
@@ -100,6 +104,7 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
           bool fit_valid;
           Double_t itr;
           Int_t triggerWord;
+          Int_t uTDays, uTSecs, uTNSecs; 
           t1->SetBranchAddress("nhits",&nhits);
           t1->SetBranchAddress("q",&charge);
           t1->SetBranchAddress("dcFlagged",&flag);
@@ -110,10 +115,25 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
           t1->SetBranchAddress("fitValid",&fit_valid);
           t1->SetBranchAddress("triggerWord",&triggerWord);
           t1->SetBranchAddress("itr",&itr);
+          t1->SetBranchAddress("uTDays",&uTDays);
+          t1->SetBranchAddress("uTSecs",&uTSecs);
+          t1->SetBranchAddress("uTNSecs",&uTNSecs);
 
           Long64_t nentries = t1->GetEntries();
+          int start_days, start_secs, start_nsecs;
+          int end_days, end_secs, end_nsecs;
           for (Long64_t j=0;j<nentries;j++) {
              t1->GetEntry(j);
+             if(j==0) {
+                 start_days = uTDays;
+                 start_secs = uTSecs;
+                 start_nsecs = uTNSecs;
+             }
+             if(j==nentries-1) {
+                 end_days = uTDays;
+                 end_secs = uTSecs;
+                 end_nsecs = uTNSecs;
+             }
              //analysis_mask
              //bool dataclean = !(flag & 0b111111111111110);
              //analysis_mask without tpmuonfollowercut-short
@@ -156,7 +176,7 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
                 hfitValid->Fill(fit_valid); 
                 if(fit_valid){
                     hposxy->Fill(posx,posy);
-                    hposrz->Fill(sqrt(posx*posx + posy*posy), posz);
+                    hposRz->Fill(sqrt(posx*posx + posy*posy + posz*posz), posz);
                     hposx->Fill(posx);
                     hposy->Fill(posy);
                     hposz->Fill(posz);
@@ -166,6 +186,7 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
                 n_events++;
              }
           }
+          run_duration = (end_days-start_days)*60*60*24 + (end_secs-start_secs) + ((end_nsecs-start_nsecs) * 1E-9);
       } else {
           RAT::DU::DSReader dsReader( files[i] );
           const RAT::DU::PMTInfo& pmtInfo = RAT::DU::Utility::Get()->GetPMTInfo();
@@ -173,14 +194,18 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
           //ULong64_t rDataCleaningWord = RAT::GetDataCleaningWord( "analysis_mask" );
           //Temporary mask removing tpmuonfollowercut-short which has a bug for this production
           ULong64_t rDataCleaningWord = RAT::GetDataCleaningWord( "analysis_mask_temp" );
+          RAT::DS::UniversalTime start_time;
+          RAT::DS::UniversalTime end_time;
           for( size_t iEntry = 0; iEntry < dsReader.GetEntryCount(); iEntry++ )
           {
               const RAT::DS::Entry& rDS = dsReader.GetEntry( iEntry );
               for( size_t iEv = 0; iEv < rDS.GetEVCount(); iEv++ )
               {   
                   RAT::DS::EV rEV = rDS.GetEV(iEv);
+                  if(iEntry == 0 && iEv == 0 ) start_time = rEV.GetUniversalTime();
+                  if(iEntry == dsReader.GetEntryCount()-1 && iEv == rDS.GetEVCount()-1 ) end_time = rEV.GetUniversalTime();
                   const RAT::DS::Meta& rMeta = dsReader.GetMeta();
-                  if(RAT::EventIsClean( rEV, rMeta, rDataCleaningWord )){
+                 // if(RAT::EventIsClean( rEV, rMeta, rDataCleaningWord )){
                       n_events++;
                       hNHits->Fill( rEV.GetNhits() );
                       hNHits_log->Fill( rEV.GetNhits() );
@@ -217,12 +242,13 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
                           if( rvertex.ContainsPosition() && rvertex.ValidPosition() ) {
                               hfitValid->Fill(1.);
                               hposxy->Fill(rvertex.GetPosition().X(),rvertex.GetPosition().Y());
-                              hposrz->Fill(sqrt(rvertex.GetPosition().X()*rvertex.GetPosition().X()  + rvertex.GetPosition().Y()*rvertex.GetPosition().Y()), 
-                                    rvertex.GetPosition().Z());
+                              double R = sqrt(rvertex.GetPosition().X()*rvertex.GetPosition().X()  + rvertex.GetPosition().Y()*rvertex.GetPosition().Y() + rvertex.GetPosition().Z()*rvertex.GetPosition().Z());
+                              hposRz->Fill(R, rvertex.GetPosition().Z());
                               hposx->Fill(rvertex.GetPosition().X());
                               hposy->Fill(rvertex.GetPosition().Y());
                               hposz->Fill(rvertex.GetPosition().Z());
-                              hposR->Fill(sqrt(rvertex.GetPosition().X()*rvertex.GetPosition().X()  + rvertex.GetPosition().Y()*rvertex.GetPosition().Y() + rvertex.GetPosition().Z()*rvertex.GetPosition().Z()) );
+                              hposR->Fill(R );
+                              hposR3->Fill(pow(R,3)/pow(6005.3,3));
                               hitr->Fill(rEV.GetClassifierResult("ITR:waterFitter").GetClassification("ITR"));
                           } else hfitValid->Fill(0.);
                       } else hfitValid->Fill(0.);
@@ -237,9 +263,10 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
                           hzpmt->Fill(pmtpos.Z());
                           htpmt->Fill((calpmts.GetNormalPMT(ipmt)).GetTime());
                       }
-                  }
+                 // }
               }
           }
+          run_duration = ((end_time-start_time).GetDays())*60*60*24 + ((end_time-start_time).GetSeconds()) + ((end_time-start_time).GetNanoSeconds() * 1E-9);
       }
       
       std::pair<std::string,std::string> run_info = ParseRunInfo(files[i]);
@@ -287,6 +314,12 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
       c1->Update();
       c1->SaveAs((output_dir+"nhits_pulseGT_"+outname+postfix+".png").c_str());
       c1->SaveAs((output_dir+"nhits_pulseGT_"+outname+postfix+".pdf").c_str());
+      c1->SetLogx();
+      c1->SetLogy();
+      c1->SaveAs((output_dir+"nhits_pulseGT_log_"+outname+postfix+".png").c_str());
+      c1->SaveAs((output_dir+"nhits_pulseGT_log_"+outname+postfix+".pdf").c_str());
+      c1->SetLogx(0);
+      c1->SetLogy(0);
       c1->Clear();
       
       hTotalQ_pulseGT->SetFillStyle(1001);
@@ -309,6 +342,12 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
       c1->Update();
       c1->SaveAs((output_dir+"nhits_N100M_"+outname+postfix+".png").c_str());
       c1->SaveAs((output_dir+"nhits_N100M_"+outname+postfix+".pdf").c_str());
+      c1->SetLogx();
+      c1->SetLogy();
+      c1->SaveAs((output_dir+"nhits_N100M_log_"+outname+postfix+".png").c_str());
+      c1->SaveAs((output_dir+"nhits_N100M_log_"+outname+postfix+".pdf").c_str());
+      c1->SetLogx(0);
+      c1->SetLogy(0);
       c1->Clear();
       
       hTotalQ_N100M->SetFillStyle(1001);
@@ -331,6 +370,12 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
       c1->Update();
       c1->SaveAs((output_dir+"nhits_N100H_"+outname+postfix+".png").c_str());
       c1->SaveAs((output_dir+"nhits_N100H_"+outname+postfix+".pdf").c_str());
+      c1->SetLogx();
+      c1->SetLogy();
+      c1->SaveAs((output_dir+"nhits_N100H_log_"+outname+postfix+".png").c_str());
+      c1->SaveAs((output_dir+"nhits_N100H_log_"+outname+postfix+".pdf").c_str());
+      c1->SetLogx(0);
+      c1->SetLogy(0);
       c1->Clear();
       
       hTotalQ_N100H->SetFillStyle(1001);
@@ -353,6 +398,12 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
       c1->Update();
       c1->SaveAs((output_dir+"nhits_N20_"+outname+postfix+".png").c_str());
       c1->SaveAs((output_dir+"nhits_N20_"+outname+postfix+".pdf").c_str());
+      c1->SetLogx();
+      c1->SetLogy();
+      c1->SaveAs((output_dir+"nhits_N20_log_"+outname+postfix+".png").c_str());
+      c1->SaveAs((output_dir+"nhits_N20_log_"+outname+postfix+".pdf").c_str());
+      c1->SetLogx(0);
+      c1->SetLogy(0);
       c1->Clear();
       
       hTotalQ_N20->SetFillStyle(1001);
@@ -375,6 +426,12 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
       c1->Update();
       c1->SaveAs((output_dir+"nhits_ESUMH_"+outname+postfix+".png").c_str());
       c1->SaveAs((output_dir+"nhits_ESUMH_"+outname+postfix+".pdf").c_str());
+      c1->SetLogx();
+      c1->SetLogy();
+      c1->SaveAs((output_dir+"nhits_ESUMH_log_"+outname+postfix+".png").c_str());
+      c1->SaveAs((output_dir+"nhits_ESUMH_log_"+outname+postfix+".pdf").c_str());
+      c1->SetLogx(0);
+      c1->SetLogy(0);
       c1->Clear();
       
       hTotalQ_ESUMH->SetFillStyle(1001);
@@ -397,6 +454,12 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
       c1->Update();
       c1->SaveAs((output_dir+"nhits_OWLEH_"+outname+postfix+".png").c_str());
       c1->SaveAs((output_dir+"nhits_OWLEH_"+outname+postfix+".pdf").c_str());
+      c1->SetLogx();
+      c1->SetLogy();
+      c1->SaveAs((output_dir+"nhits_OWLEH_log_"+outname+postfix+".png").c_str());
+      c1->SaveAs((output_dir+"nhits_OWLEH_log_"+outname+postfix+".pdf").c_str());
+      c1->SetLogx(0);
+      c1->SetLogy(0);
       c1->Clear();
       
       hTotalQ_OWLEH->SetFillStyle(1001);
@@ -422,6 +485,9 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
       hNEvents_vs_run->Fill(i, n_events);
       hNEvents_vs_run->SetBinError(i+1,sqrt(n_events));
       hNEvents_vs_run->GetXaxis()->SetBinLabel(i+1,bin_label.c_str());
+      hNEventsnorm_vs_run->Fill(i, n_events/run_duration);
+      hNEventsnorm_vs_run->SetBinError(i+1,sqrt(n_events/run_duration));
+      hNEventsnorm_vs_run->GetXaxis()->SetBinLabel(i+1,bin_label.c_str());
       
       hposx->GetYaxis()->SetTitle( "Events" );
       hposx->GetXaxis()->SetTitle( "X Position (mm)" );
@@ -465,6 +531,17 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
       c1->Update();
       c1->SaveAs((output_dir+"posR_"+outname+postfix+".png").c_str());
       c1->SaveAs((output_dir+"posR_"+outname+postfix+".pdf").c_str());
+      c1->Clear();
+      
+      hposR3->GetYaxis()->SetTitle( "Events" );
+      hposR3->GetXaxis()->SetTitle( "(R / R_{av})^{3}" );
+      hposR3->SetFillStyle(1001);
+      hposR3->SetFillColor(kYellow-4);
+      hposR3->Draw("hist");
+      title_latex->DrawLatex(0.55, 0.94, ("Run: "+run_info.first + " Subrun: " + run_info.second).c_str()  );
+      c1->Update();
+      c1->SaveAs((output_dir+"posR3_"+outname+postfix+".png").c_str());
+      c1->SaveAs((output_dir+"posR3_"+outname+postfix+".pdf").c_str());
       c1->Clear();
       
       hfitValid->GetYaxis()->SetTitle( "Events" );
@@ -560,20 +637,20 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
       c2->Clear();
       
       TCanvas* c3 = new TCanvas("c3","c3",600,500);
-      hposrz->GetYaxis()->SetTitle( "Z position (mm)" );
-      hposrz->GetXaxis()->SetTitle( "r = #sqrt{(x^2 + y^2)} position (mm)" );
-      hposrz->SetMarkerStyle(20);
-      hposrz->Draw("colzsame");
+      hposRz->GetYaxis()->SetTitle( "Z position (mm)" );
+      hposRz->GetXaxis()->SetTitle( "R position (mm)" );
+      hposRz->SetMarkerStyle(20);
+      hposRz->Draw("colzsame");
       title_latex->DrawLatex(0.55, 0.94, ("Run: "+run_info.first + " Subrun: " + run_info.second).c_str()  );
       c3->SetRightMargin(0.15);
       c3->Update();
-      c3->SaveAs((output_dir+"posrz_"+outname+postfix+".png").c_str());
-      c3->SaveAs((output_dir+"posrz_"+outname+postfix+".pdf").c_str());
+      c3->SaveAs((output_dir+"posRz_"+outname+postfix+".png").c_str());
+      c3->SaveAs((output_dir+"posRz_"+outname+postfix+".pdf").c_str());
       c3->Clear();
       
       delete hNHits, hNHits_pulseGT, hNHits_N100M, hNHits_N100H, hNHits_N20, hNHits_ESUMH, hNHits_OWLEH;
       delete hTotalQ, hTotalQ_pulseGT, hTotalQ_N100M, hTotalQ_N100H, hTotalQ_N20, hTotalQ_ESUMH, hTotalQ_OWLEH;
-      delete hposxy, hposrz, hposx, hposy, hposz, hposR, hrpmt, hxpmt, hypmt, hzpmt, htpmt, hfitValid;
+      delete hposxy, hposRz, hposx, hposy, hposz, hposR, hrpmt, hxpmt, hypmt, hzpmt, htpmt, hfitValid;
       delete c1;
       delete c2;
       delete c3;
@@ -618,10 +695,24 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
   c100->Update();
   c100->SaveAs((output_dir+"nevents_vs_run_"+start_run+"_to_"+end_run+postfix+".png").c_str());
   c100->SaveAs((output_dir+"nevents_vs_run_"+start_run+"_to_"+end_run+postfix+".pdf").c_str());
+  
+  hNEventsnorm_vs_run->SetMarkerColor(kGreen+3);
+  hNEventsnorm_vs_run->SetMarkerStyle(20);
+  hNEventsnorm_vs_run->SetLineColor(kGreen+3);
+  hNEventsnorm_vs_run->GetYaxis()->SetTitle( "# Events per second" );
+  hNEventsnorm_vs_run->GetXaxis()->SetTitle( "Run ID" );
+  hNEventsnorm_vs_run->GetXaxis()->SetTitleOffset(1.9);
+  hNEventsnorm_vs_run->Draw("PE1");
+  c100->SetLeftMargin(0.1);
+  c100->SetBottomMargin(0.18);
+  c100->Update();
+  c100->SaveAs((output_dir+"neventsnorm_vs_run_"+start_run+"_to_"+end_run+postfix+".png").c_str());
+  c100->SaveAs((output_dir+"neventsnorm_vs_run_"+start_run+"_to_"+end_run+postfix+".pdf").c_str());
   delete c100;
   delete hNHits_vs_run;
   delete hTotalQ_vs_run;
   delete hNEvents_vs_run;
+  delete hNEventsnorm_vs_run;
  
 }
 
