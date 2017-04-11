@@ -4,7 +4,10 @@ LIBNAME = PlotProcessedData
 SHELL=bash
 
 USERINCLUDES += -Iinclude -I$(RATROOT)/include -I$(ROOTSYS)/include -I$(RATROOT)/src/stlplusINCLUDE
-USERLIBS += $(shell root-config --cflags) -L$(RATROOT)/lib -lRATEvent_$(RATSYSTEM) -L$(ROOTSYS)/lib $(ROOTLIBS) 
+USERLIBS += $(shell root-config --cflags) -L$(RATROOT)/lib -lRATEvent_$(RATSYSTEM) -L$(ROOTSYS)/lib $(ROOTLIBS)
+
+USERINCLUDES += -I/usr/include/boost/
+USERLIBS += -L/usr/lib64/ -lboost_regex -lboost_program_options -lboost_filesystem -lboost_system 
 
 CXXFLAGS = -Wall -W -O2 -std=c++0x -Wno-deprecated-declarations -Wno-unused-parameter
 LDFLAGS = -shared -Wall -W 
@@ -40,7 +43,7 @@ docs: all
 	doxygen Doxyfile
     
 $(EXEDIR)/%:  $(TESTDIR)/%.cpp $(LIBDIR)/lib$(LIBNAME).so $(wildcard $(BASEDIR)/src/*.cc) 
-	$(CXX) -o $@ $(CXXFLAGS) $< $(LIBS) -L$(LIBDIR) 
+	$(CXX) -o $@ $(CXXFLAGS) $< $(LIBS) -L$(LIBDIR) -l$(LIBNAME) 
 
 
 $(OBJDIR)/%.$(OBJ_EXT):  $(SRCDIR)/%.cc $(BASEDIR)/interface/%.hh

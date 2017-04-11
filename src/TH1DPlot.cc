@@ -1,15 +1,16 @@
 #include <TStyle.h>
+#include <TCanvas.h>
+#include <TH1D.h>
 #include <TROOT.h>
+#include <TLatex.h>
+#include <TColor.h>
 #include <iostream>
 #include "../interface/TH1DPlot.hh"
 
 
-TH1DPlot::~TH1DPlot() {
+//Private functions
 
-}
-
-
-void TH1DPlot::SetMyStyle() {
+void TH1DPlot::SetMyStyle_() {
     TStyle *MyStyle = new TStyle("My-Style","Stealing some cosmetics from Htt!");
     gStyle = MyStyle;
 
@@ -103,13 +104,50 @@ void TH1DPlot::SetMyStyle() {
 
 }
 
-/*void TH1DPlot::CreateCanvas(){
+//Public functions
 
 
-}*/
+std::string TH1DPlot::GetName(){
+    return name;
+}
+
+TH1D* TH1DPlot::GetHist(){
+    return hist;
+}
+
+void TH1DPlot::SetHist(TH1D* h){
+    hist = h;
+}
+
+std::string TH1DPlot::GetOutFilename(){
+    return output_filename;
+}
+
+void TH1DPlot::SetOutFilename(std::string filename){
+    output_filename = filename;
+}
+
+void TH1DPlot::SetRunInfo(std::pair<std::string,std::string> info){
+    run_info = info;
+}
+
 
 int TH1DPlot::GeneratePlot() {
-    SetMyStyle();
-    std::cout << "This is where we would generate the plot" << std::endl;    
     
+    SetMyStyle_();
+    TCanvas* c1 = new TCanvas();
+    hist->SetFillStyle(1001);
+    hist->SetFillColor(TColor::GetColor(r_,g_,b_));
+    hist->GetYaxis()->SetTitle( y_title_.c_str() );
+    hist->GetXaxis()->SetTitle( x_title_.c_str() );
+    hist->Draw("hist");
+    TLatex *title_latex = new TLatex();
+    title_latex->SetNDC();
+    title_latex->SetTextSize(0.04);
+    title_latex->DrawLatex(0.55, 0.94, ("Run: "+run_info.first + " Subrun: " + run_info.second).c_str() );
+    c1->SaveAs((output_filename+".png").c_str());
+    c1->SaveAs((output_filename+".pdf").c_str());
+    delete c1;
+    
+    return 0; 
 }
