@@ -140,6 +140,7 @@ int TH1DPlot::GeneratePlot() {
     hist->SetFillColor(TColor::GetColor(r_,g_,b_));
     hist->GetYaxis()->SetTitle( y_title_.c_str() );
     hist->GetXaxis()->SetTitle( x_title_.c_str() );
+    hist->SetMinimum(0.0);
     hist->Draw("hist");
     TLatex *title_latex = new TLatex();
     title_latex->SetNDC();

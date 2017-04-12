@@ -20,7 +20,6 @@ class TH1DPlot {
 
         TH1DPlot(){;}
         
-        
         TH1DPlot(std::string config_file) {
             
             //Fill class member variables from config file
@@ -50,10 +49,12 @@ class TH1DPlot {
 
             po::store(po::parse_config_file<char>(settings_file , desc), vm);
             po::notify(vm);  
+            
+            SetMyStyle_();
 
             hist = new TH1D(name.c_str(),name.c_str(),nbins,x_start_bin_,x_end_bin_);
             std::stringstream ss(fill_colour);
-            std::vector<Float_t> vect;
+            std::vector<Int_t> vect;
             Float_t i;
             while (ss >> i)
             {
@@ -66,7 +67,10 @@ class TH1DPlot {
             b_ = vect[2];
         }
         
-        ~TH1DPlot(){};
+        ~TH1DPlot(){
+        };
+        
+        
         int GeneratePlot();
         TH1D* GetHist();
         void SetHist(TH1D* h);
@@ -76,7 +80,7 @@ class TH1DPlot {
 
         std::string name;
         int nbins;
-        TH1D* hist;
+        TH1D* hist; 
         std::string output_filename;
         std::pair<std::string,std::string> run_info;
         std::string GetName();
@@ -90,8 +94,7 @@ class TH1DPlot {
         bool log_y_;
         std::string x_title_;
         std::string y_title_;
-        Float_t r_,g_,b_; 
-
+        Int_t r_, g_, b_;
 
 };
 
