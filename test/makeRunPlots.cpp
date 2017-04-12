@@ -419,8 +419,21 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
  
 }
 
-void makeRunPlots(std::string filelist, std::string output_dir = "plots/")
-{
+
+int main(int argc, char** argv){
+
+   po::options_description desc("Options"); 
+   std::string filelist;
+   std::string directory = "plots/";
+   desc.add_options() 
+    ("filelist", po::value<std::string>(&filelist)) 
+    ("directory", po::value<std::string>(&directory)->default_value("plots/"));
+
+  po::variables_map vm;
+  po::store(po::parse_command_line(argc, argv, desc),  
+                  vm);
+  po::notify(vm);
+
   std::ifstream infile(filelist.c_str());
   std::vector<std::string> files;
   std::string line;
@@ -431,11 +444,8 @@ void makeRunPlots(std::string filelist, std::string output_dir = "plots/")
   //Possible to use both ntuple files or ratds files. Assumes that the txt file containing the filelist follows my naming convention
   bool ntuple=false;
   if(files[0].find("ntuple")!=std::string::npos) ntuple=true;
-  CreateRunPlots(files,ntuple,output_dir);
-  return;
-}
+  CreateRunPlots(files,ntuple,directory);
 
-int main(){
-  makeRunPlots("filelists/filelist_rat625_waterFit_ntuple.dat","dump/");
+
   return 0;
 }
