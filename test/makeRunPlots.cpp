@@ -26,7 +26,7 @@
 #include <boost/filesystem.hpp>
 #include <boost/range/iterator_range.hpp>
 
-#include "../interface/TH1DPlot.hh"
+#include "../interface/THPlot.hh"
 #include "../interface/styles.h"
 
 namespace po = boost::program_options;
@@ -49,8 +49,8 @@ std::pair<std::string, std::string> ParseRunInfo(const std::string filename){
 }
 
 //Create map to store all plots requested in config files and set style choices
-std::map<std::string,TH1DPlot::TH1DPlot> ParseConfigs(std::string config_dir="config/"){
-  std::map<std::string,TH1DPlot::TH1DPlot> plot_map;
+std::map<std::string,THPlot::THPlot> ParseConfigs(std::string config_dir="config/"){
+  std::map<std::string,THPlot::THPlot> plot_map;
 
   fs::path p(config_dir.c_str());
   fs::directory_iterator end_itr;
@@ -60,7 +60,7 @@ std::map<std::string,TH1DPlot::TH1DPlot> ParseConfigs(std::string config_dir="co
     if (fs::is_regular_file(itr->path())) {
         std::string current_file = itr->path().string();
         //Create plot object setting styles from the config file
-        TH1DPlot::TH1DPlot plot(current_file.c_str());
+        THPlot::THPlot plot(current_file.c_str());
         current_file = current_file.erase(current_file.find(".cfg"),current_file.size()-1);
         current_file = current_file.erase(0,current_file.find("/")+1);
         plot_map[current_file] = plot;
@@ -85,59 +85,65 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
   for(unsigned i=0; i<files.size(); ++i){
       
     //Create a collection of histograms
-    std::map<std::string,TH1DPlot::TH1DPlot> plot_map = ParseConfigs();
-    TH1DPlot::TH1DPlot nhits_plot(plot_map["nhits"]);
+    std::map<std::string,THPlot::THPlot> plot_map = ParseConfigs();
+    THPlot::THPlot nhits_plot(plot_map["nhits"]);
     TH1D* hnhits = nhits_plot.GetHist(); 
-    TH1DPlot::TH1DPlot nhits_pulseGT_plot(plot_map["nhits_pulseGT"]);
+    THPlot::THPlot nhits_pulseGT_plot(plot_map["nhits_pulseGT"]);
     TH1D* hnhits_pulseGT = nhits_pulseGT_plot.GetHist(); 
-    TH1DPlot::TH1DPlot nhits_N100M_plot(plot_map["nhits_N100M"]);
+    THPlot::THPlot nhits_N100M_plot(plot_map["nhits_N100M"]);
     TH1D* hnhits_N100M = nhits_N100M_plot.GetHist(); 
-    TH1DPlot::TH1DPlot nhits_N100H_plot(plot_map["nhits_N100H"]);
+    THPlot::THPlot nhits_N100H_plot(plot_map["nhits_N100H"]);
     TH1D* hnhits_N100H = nhits_N100H_plot.GetHist(); 
-    TH1DPlot::TH1DPlot nhits_N20_plot(plot_map["nhits_N20"]);
+    THPlot::THPlot nhits_N20_plot(plot_map["nhits_N20"]);
     TH1D* hnhits_N20 = nhits_N20_plot.GetHist(); 
-    TH1DPlot::TH1DPlot nhits_ESUMH_plot(plot_map["nhits_ESUMH"]);
+    THPlot::THPlot nhits_ESUMH_plot(plot_map["nhits_ESUMH"]);
     TH1D* hnhits_ESUMH = nhits_ESUMH_plot.GetHist(); 
-    TH1DPlot::TH1DPlot nhits_OWLEH_plot(plot_map["nhits_OWLEH"]);
+    THPlot::THPlot nhits_OWLEH_plot(plot_map["nhits_OWLEH"]);
     TH1D* hnhits_OWLEH = nhits_OWLEH_plot.GetHist(); 
-    TH1DPlot::TH1DPlot totalQ_plot(plot_map["totalQ"]);
+    THPlot::THPlot totalQ_plot(plot_map["totalQ"]);
     TH1D* htotalQ = totalQ_plot.GetHist(); 
-    TH1DPlot::TH1DPlot totalQ_pulseGT_plot(plot_map["totalQ_pulseGT"]);
+    THPlot::THPlot totalQ_pulseGT_plot(plot_map["totalQ_pulseGT"]);
     TH1D* htotalQ_pulseGT = totalQ_pulseGT_plot.GetHist(); 
-    TH1DPlot::TH1DPlot totalQ_N100M_plot(plot_map["totalQ_N100M"]);
+    THPlot::THPlot totalQ_N100M_plot(plot_map["totalQ_N100M"]);
     TH1D* htotalQ_N100M = totalQ_N100M_plot.GetHist(); 
-    TH1DPlot::TH1DPlot totalQ_N100H_plot(plot_map["totalQ_N100H"]);
+    THPlot::THPlot totalQ_N100H_plot(plot_map["totalQ_N100H"]);
     TH1D* htotalQ_N100H = totalQ_N100H_plot.GetHist(); 
-    TH1DPlot::TH1DPlot totalQ_N20_plot(plot_map["totalQ_N20"]);
+    THPlot::THPlot totalQ_N20_plot(plot_map["totalQ_N20"]);
     TH1D* htotalQ_N20 = totalQ_N20_plot.GetHist(); 
-    TH1DPlot::TH1DPlot totalQ_ESUMH_plot(plot_map["totalQ_ESUMH"]);
+    THPlot::THPlot totalQ_ESUMH_plot(plot_map["totalQ_ESUMH"]);
     TH1D* htotalQ_ESUMH = totalQ_ESUMH_plot.GetHist(); 
-    TH1DPlot::TH1DPlot totalQ_OWLEH_plot(plot_map["totalQ_OWLEH"]);
+    THPlot::THPlot totalQ_OWLEH_plot(plot_map["totalQ_OWLEH"]);
     TH1D* htotalQ_OWLEH = totalQ_OWLEH_plot.GetHist(); 
-    TH1DPlot::TH1DPlot fitValid_plot(plot_map["fitValid"]);
+    THPlot::THPlot fitValid_plot(plot_map["fitValid"]);
     TH1D* hfitValid = fitValid_plot.GetHist(); 
-    TH1DPlot::TH1DPlot itr_plot(plot_map["itr"]);
+    THPlot::THPlot itr_plot(plot_map["itr"]);
     TH1D* hitr = itr_plot.GetHist(); 
-    TH1DPlot::TH1DPlot posx_plot(plot_map["posx"]);
+    THPlot::THPlot posx_plot(plot_map["posx"]);
     TH1D* hposx = posx_plot.GetHist(); 
-    TH1DPlot::TH1DPlot posy_plot(plot_map["posy"]);
+    THPlot::THPlot posy_plot(plot_map["posy"]);
     TH1D* hposy = posy_plot.GetHist(); 
-    TH1DPlot::TH1DPlot posz_plot(plot_map["posz"]);
+    THPlot::THPlot posz_plot(plot_map["posz"]);
     TH1D* hposz = posz_plot.GetHist(); 
-    TH1DPlot::TH1DPlot posR_plot(plot_map["posR"]);
+    THPlot::THPlot posR_plot(plot_map["posR"]);
     TH1D* hposR = posR_plot.GetHist(); 
-    TH1DPlot::TH1DPlot posR3_plot(plot_map["posR3"]);
+    THPlot::THPlot posR3_plot(plot_map["posR3"]);
     TH1D* hposR3 = posR3_plot.GetHist(); 
-    TH1DPlot::TH1DPlot rpmt_plot(plot_map["rpmt"]);
+    THPlot::THPlot rpmt_plot(plot_map["rpmt"]);
     TH1D* hrpmt = rpmt_plot.GetHist(); 
-    TH1DPlot::TH1DPlot xpmt_plot(plot_map["xpmt"]);
+    THPlot::THPlot xpmt_plot(plot_map["xpmt"]);
     TH1D* hxpmt = xpmt_plot.GetHist(); 
-    TH1DPlot::TH1DPlot ypmt_plot(plot_map["ypmt"]);
+    THPlot::THPlot ypmt_plot(plot_map["ypmt"]);
     TH1D* hypmt = ypmt_plot.GetHist(); 
-    TH1DPlot::TH1DPlot zpmt_plot(plot_map["zpmt"]);
+    THPlot::THPlot zpmt_plot(plot_map["zpmt"]);
     TH1D* hzpmt = zpmt_plot.GetHist(); 
-    TH1DPlot::TH1DPlot tpmt_plot(plot_map["tpmt"]);
+    THPlot::THPlot tpmt_plot(plot_map["tpmt"]);
     TH1D* htpmt = tpmt_plot.GetHist(); 
+    THPlot::THPlot posxy_plot(plot_map["posxy"]);
+    TH2D* hposxy = posxy_plot.Get2DHist(); 
+    THPlot::THPlot posrz_plot(plot_map["posrz"]);
+    TH2D* hposrz = posrz_plot.Get2DHist(); 
+    THPlot::THPlot posRz_plot(plot_map["posRz"]);
+    TH2D* hposRz = posRz_plot.Get2DHist(); 
   
     TFile *f = new TFile(files[i].c_str());
   
@@ -214,14 +220,15 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
           }
           hfitValid->Fill(fit_valid); 
           if(fit_valid){
-            //hposxy->Fill(posx,posy);
-           // hposRz->Fill(sqrt(posx*posx + posy*posy + posz*posz), posz);
+            hposrz->Fill(sqrt(posx*posx + posy*posy), posz);
             hposx->Fill(posx);
             hposy->Fill(posy);
             hposz->Fill(posz);
+            hposxy->Fill(posx,posy);
             double R = sqrt(posx*posx + posy*posy + posz*posz);
             hposR->Fill(R);
             hposR3->Fill(pow(R,3)/pow(6005.3,3));
+            hposRz->Fill(R, posz);
             hitr->Fill(itr); 
           }
           n_events++;
@@ -280,12 +287,13 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
                 RAT::DS::FitVertex rvertex = rEV.GetFitResult("waterFitter").GetVertex(0);
               if( rvertex.ContainsPosition() && rvertex.ValidPosition() ) {
                 hfitValid->Fill(1.);
-                //hposxy->Fill(rvertex.GetPosition().X(),rvertex.GetPosition().Y());
                 double R = sqrt(rvertex.GetPosition().X()*rvertex.GetPosition().X()  + rvertex.GetPosition().Y()*rvertex.GetPosition().Y() + rvertex.GetPosition().Z()*rvertex.GetPosition().Z());
-                //hposRz->Fill(R, rvertex.GetPosition().Z());
                 hposx->Fill(rvertex.GetPosition().X());
                 hposy->Fill(rvertex.GetPosition().Y());
                 hposz->Fill(rvertex.GetPosition().Z());
+                hposxy->Fill(rvertex.GetPosition().X(),rvertex.GetPosition().Y());
+                hposRz->Fill(R,rvertex.GetPosition().Z());
+                hposrz->Fill(sqrt(rvertex.GetPosition().X()*rvertex.GetPosition().X() + rvertex.GetPosition().Y()*rvertex.GetPosition().Y()),rvertex.GetPosition().Z());
                 hposR->Fill(R );
                 hposR3->Fill(pow(R,3)/pow(6005.3,3));
                 hitr->Fill(rEV.GetClassifierResult("ITR:waterFitter").GetClassification("ITR"));
@@ -332,16 +340,20 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
     xpmt_plot.SetHist(hxpmt);
     ypmt_plot.SetHist(hypmt);
     zpmt_plot.SetHist(hzpmt);
+    tpmt_plot.SetHist(htpmt);
+    posxy_plot.Set2DHist(hposxy);
+    posrz_plot.Set2DHist(hposrz);
+    posRz_plot.Set2DHist(hposRz);
   
     //=============================================================================
     //Make some plots
    
     std::pair<std::string,std::string> run_info = ParseRunInfo(files[i]);
     std::string outname = run_info.first + "_" + run_info.second; 
-    std::map<std::string, TH1DPlot::TH1DPlot>::iterator it;
+    std::map<std::string, THPlot::THPlot>::iterator it;
     for ( it = plot_map.begin(); it != plot_map.end(); it++ )
     {
-        TH1DPlot::TH1DPlot plot = it->second;
+        THPlot::THPlot plot = it->second;
         plot.SetOutFilename(output_dir + plot.GetOutFilename() + "_" + outname + postfix);
         plot.SetRunInfo(run_info);
         plot.GeneratePlot();
