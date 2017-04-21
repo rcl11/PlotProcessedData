@@ -77,6 +77,7 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
   TH1D* hNEvents_vs_run = new TH1D( "hNEvents_vs_run", "Number of events per run", files.size(), 0.0, files.size() );
   TH1D* hNCleanEvents_vs_run = new TH1D( "hNCleanEvents_vs_run", "Number of clean events per run", files.size(), 0.0, files.size() );
   TH1D* hNCleanEventsnorm_vs_run = new TH1D( "hNCleanEventsnorm_vs_run", "Normalised number of clean events per run", files.size(), 0.0, files.size() );
+  TH1D* hFracCleanEvents_vs_run = new TH1D( "hFracCleanEvents_vs_run", "Fraction of clean events per run", files.size(), 0.0, files.size() );
   std::string start_run;
   std::string end_run;
   std::string postfix = "";
@@ -147,8 +148,15 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
     TH2D* hposRz = posRz_plot.Get2DHist(); 
     THPlot::THPlot duration_plot(plot_map["duration"]);
     TH1D* hduration = duration_plot.GetHist(); 
+    THPlot::THPlot trigger_plot(plot_map["trigger"]);
+    TH1D* htrigger = trigger_plot.GetHist(); 
   
     TFile *f = new TFile(files[i].c_str());
+    
+    std::vector<std::string> trig_names = {"N100L","N100M","N100H","N20","N20LB","ESUML","ESUMH","OWLN","OWLEL","OWLEH","PULGT"}; 
+    for(unsigned h=0;h<trig_names.size();h++){
+      htrigger->GetXaxis()->SetBinLabel(h+1,trig_names[h].c_str());
+    }
   
     int n_cleanevents=0;
     int n_events=0;
@@ -218,27 +226,49 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
           if(bits.test(10)){
             hnhits_pulseGT->Fill(nhits);
             htotalQ_pulseGT->Fill(charge);
+            htrigger->Fill("PULGT", 1);
+          }
+          if(bits.test(0)){
+            htrigger->Fill("N100L", 1);
           }
           if(bits.test(1)){
             hnhits_N100M->Fill(nhits);
             htotalQ_N100M->Fill(charge);
+            htrigger->Fill("N100M", 1);
           }
           if(bits.test(2)){
             hnhits_N100H->Fill(nhits);
             htotalQ_N100H->Fill(charge);
+            htrigger->Fill("N100H", 1);
           }
           if(bits.test(3)){
             hnhits_N20->Fill(nhits);
             htotalQ_N20->Fill(charge);
+            htrigger->Fill("N20", 1);
+          }
+          if(bits.test(4)){
+            htrigger->Fill("N20LB", 1);
+          }
+          if(bits.test(5)){
+            htrigger->Fill("ESUML", 1);
           }
           if(bits.test(6)){
             hnhits_ESUMH->Fill(nhits);
             htotalQ_ESUMH->Fill(charge);
+            htrigger->Fill("ESUMH", 1);
+          }
+          if(bits.test(7)){
+            htrigger->Fill("OWLN", 1);
+          }
+          if(bits.test(8)){
+            htrigger->Fill("OWLEL", 1);
           }
           if(bits.test(9)){
             hnhits_OWLEH->Fill(nhits);
             htotalQ_OWLEH->Fill(charge);
+            htrigger->Fill("OWLEH", 1);
           }
+          //std::cout << "testing pulseGT trigger " << bits.test(10) << " " << htrigger->GetBinContent(11) << std::endl; 
           hfitValid->Fill(fit_valid); 
           if(fit_valid){
             hposrz->Fill(sqrt(posx*posx + posy*posy), posz);
@@ -283,29 +313,50 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
             htotalQ->Fill( rEV.GetTotalCharge() );
             //Fill some nhits and total q plots for different triggers fired
             //std::cout << std::bitset<32>(rEV.GetTrigType())/*.to_string()*/ << std::endl;
-            if(RAT::BitManip::TestBit(rEV.GetTrigType(), RAT::DU::TrigBits::PulseGT)){
-                hnhits_pulseGT->Fill(rEV.GetNhits()); 
-                htotalQ_pulseGT->Fill( rEV.GetTotalCharge() );
+            if(RAT::BitManip::TestBit(rEV.GetTrigType(), RAT::DU::TrigBits::N100Low)){
+                htrigger->Fill("N100L", 1);
             }
             if(RAT::BitManip::TestBit(rEV.GetTrigType(), RAT::DU::TrigBits::N100Med)){
                 hnhits_N100M->Fill(rEV.GetNhits()); 
                 htotalQ_N100M->Fill( rEV.GetTotalCharge() );
+                htrigger->Fill("N100M", 1);
             }
             if(RAT::BitManip::TestBit(rEV.GetTrigType(), RAT::DU::TrigBits::N100High)){
                 hnhits_N100H->Fill(rEV.GetNhits()); 
                 htotalQ_N100H->Fill( rEV.GetTotalCharge() );
+                htrigger->Fill("N100H", 1);
             }
             if(RAT::BitManip::TestBit(rEV.GetTrigType(), RAT::DU::TrigBits::N20)){
                 hnhits_N20->Fill(rEV.GetNhits()); 
                 htotalQ_N20->Fill( rEV.GetTotalCharge() );
+                htrigger->Fill("N20", 1);
+            }
+            if(RAT::BitManip::TestBit(rEV.GetTrigType(), RAT::DU::TrigBits::N20LB)){
+                htrigger->Fill("N20LB", 1);
+            }
+            if(RAT::BitManip::TestBit(rEV.GetTrigType(), RAT::DU::TrigBits::ESLow)){
+                htrigger->Fill("ESUML", 1);
             }
             if(RAT::BitManip::TestBit(rEV.GetTrigType(), RAT::DU::TrigBits::ESHigh)){
                 hnhits_ESUMH->Fill(rEV.GetNhits()); 
                 htotalQ_ESUMH->Fill( rEV.GetTotalCharge() );
+                htrigger->Fill("ESUMH", 1);
+            }
+            if(RAT::BitManip::TestBit(rEV.GetTrigType(), RAT::DU::TrigBits::OWLN)){
+                htrigger->Fill("OWLN", 1);
+            }
+            if(RAT::BitManip::TestBit(rEV.GetTrigType(), RAT::DU::TrigBits::OWLESLow)){
+                htrigger->Fill("OWLEL", 1);
             }
             if(RAT::BitManip::TestBit(rEV.GetTrigType(), RAT::DU::TrigBits::OWLESHigh)){
                 hnhits_OWLEH->Fill(rEV.GetNhits()); 
                 htotalQ_OWLEH->Fill( rEV.GetTotalCharge() );
+                htrigger->Fill("OWLEH", 1);
+            }
+            if(RAT::BitManip::TestBit(rEV.GetTrigType(), RAT::DU::TrigBits::PulseGT)){
+                hnhits_pulseGT->Fill(rEV.GetNhits()); 
+                htotalQ_pulseGT->Fill( rEV.GetTotalCharge() );
+                htrigger->Fill("PULGT", 1);
             }
                   
             if(rEV.FitResultExists("waterFitter") && rEV.GetFitResult("waterFitter").GetValid()){
@@ -341,6 +392,7 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
       run_duration = ((end_time-start_time).GetDays())*60*60*24 + ((end_time-start_time).GetSeconds()) + ((end_time-start_time).GetNanoSeconds() * 1E-9);
       hduration->Fill(run_duration);
     }
+    
     nhits_plot.SetHist(hnhits);
     nhits_pulseGT_plot.SetHist(hnhits_pulseGT);
     nhits_N100M_plot.SetHist(hnhits_N100M);
@@ -368,6 +420,7 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
     zpmt_plot.SetHist(hzpmt);
     tpmt_plot.SetHist(htpmt);
     duration_plot.SetHist(hduration);
+    trigger_plot.SetHist(htrigger);
     posxy_plot.Set2DHist(hposxy);
     posrz_plot.Set2DHist(hposrz);
     posRz_plot.Set2DHist(hposRz);
@@ -404,6 +457,9 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
     hNCleanEventsnorm_vs_run->Fill(i, n_cleanevents/run_duration);
     hNCleanEventsnorm_vs_run->SetBinError(i+1,sqrt(n_cleanevents/run_duration));
     hNCleanEventsnorm_vs_run->GetXaxis()->SetBinLabel(i+1,bin_label.c_str());
+    hFracCleanEvents_vs_run->Fill(i, float(n_cleanevents)/float(n_events));
+    hFracCleanEvents_vs_run->SetBinError(i+1,sqrt( pow((sqrt(n_cleanevents)/n_cleanevents),2) + pow((sqrt(n_events)/n_events),2)));
+    hFracCleanEvents_vs_run->GetXaxis()->SetBinLabel(i+1,bin_label.c_str());
   }
 
   SetStyle();
@@ -464,11 +520,24 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
   c100->Update();
   c100->SaveAs((output_dir+"ncleaneventsnorm_vs_run_"+start_run+"_to_"+end_run+postfix+".png").c_str());
   c100->SaveAs((output_dir+"ncleaneventsnorm_vs_run_"+start_run+"_to_"+end_run+postfix+".pdf").c_str());
+  
+  hFracCleanEvents_vs_run->SetMarkerColor(kMagenta);
+  hFracCleanEvents_vs_run->SetMarkerStyle(20);
+  hFracCleanEvents_vs_run->SetLineColor(kMagenta);
+  hFracCleanEvents_vs_run->GetYaxis()->SetTitle( "Fraction of clean Events" );
+  hFracCleanEvents_vs_run->GetXaxis()->SetTitle( "Run ID" );
+  hFracCleanEvents_vs_run->GetXaxis()->SetTitleOffset(1.9);
+  hFracCleanEvents_vs_run->Draw("PE1");
+  c100->Update();
+  c100->SaveAs((output_dir+"fraccleanevents_vs_run_"+start_run+"_to_"+end_run+postfix+".png").c_str());
+  c100->SaveAs((output_dir+"fraccleanevents_vs_run_"+start_run+"_to_"+end_run+postfix+".pdf").c_str());
+  
   delete c100;
   delete hnhits_vs_run;
   delete htotalQ_vs_run;
   delete hNEvents_vs_run;
   delete hNCleanEvents_vs_run;
+  delete hFracCleanEvents_vs_run;
   delete hNCleanEventsnorm_vs_run;
  
 }

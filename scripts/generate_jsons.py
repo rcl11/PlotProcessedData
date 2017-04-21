@@ -34,10 +34,13 @@ nice_labels = {
     'fitValid' : 'Fit validity',
     'itr' : 'ITR',
     'duration' : 'Run duration',
+    'trigger' : 'Trigger word',
 }
 
 maintenance_runs = ['14713','14714','14715','15091']
 experimental_runs = ['15143','15144','15145','15153','15154','15155','15156','15157','15158','15159']
+physics_runs = ['15060','15061','15459','16071','16072','16073','15664','15665','15666']
+runs1hr = ['15060','15061','15459']
 
 #Extract known information from filename
 for filename in glob.glob(options.dirname+"/"+"*.png"):
@@ -58,8 +61,13 @@ for filename in glob.glob(options.dirname+"/"+"*.png"):
         data['run type'] = 'maintenance'
     elif run_number in experimental_runs:
         data['run type'] = 'experimental'
-    else:
+    elif run_number in physics_runs:
         data['run type'] = 'physics'
+    
+    if run_number in runs1hr:
+        data['run duration'] = '1 hour'
+        
+    
     j = re.compile("_s([0-9]*)")
     subrun_number = j.findall(filename)[0]
 
