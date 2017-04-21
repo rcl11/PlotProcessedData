@@ -20,6 +20,7 @@ nice_labels = {
     'posR' : 'R position',
     'posR3' : 'R cubed position',
     'posRz' : 'R vs z position',
+    'posrz' : 'rho vs z position',
     'posxy' : 'x vs y position',
     'posx' : 'x position',
     'posy' : 'y position',
@@ -32,6 +33,7 @@ nice_labels = {
     'zpmt' : 'PMT z position',
     'fitValid' : 'Fit validity',
     'itr' : 'ITR',
+    'duration' : 'Run duration',
 }
 
 maintenance_runs = ['14713','14714','14715','15091']
@@ -56,6 +58,8 @@ for filename in glob.glob(options.dirname+"/"+"*.png"):
         data['run type'] = 'maintenance'
     elif run_number in experimental_runs:
         data['run type'] = 'experimental'
+    else:
+        data['run type'] = 'physics'
     j = re.compile("_s([0-9]*)")
     subrun_number = j.findall(filename)[0]
 

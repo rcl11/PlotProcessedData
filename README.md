@@ -17,6 +17,6 @@ The plotting takes either a list of ratds or ntuple files, one file per line (as
 
 Filelists for plotting can also be pruned according to some good run list using prune_filelist.py
 
-The code is built with `make` and you must also run source scripts/setup_libs.sh to link the created library correctly. The code is then run with e.g. ./bin/makeRunPlots --filelist=filelists/filelist_rat625_waterFit_ntuple.dat --directory=plots/
+The code is built with `make` and you must also run source scripts/setup_libs.sh to link the created library correctly. The code is then run with e.g. `./bin/makeRunPlots --filelist=filelists/filelist_rat625_waterFit_ntuple.dat --directory=plots/`
 
 Plots can be uploaded to a webpage after creation. The most useful format requires the use of a script called scripts/generate_jsons.py which creates some json files linking together plots from each run on the webpage. The index.html file is then generated running `python gallery/gallery.py plots/`.
