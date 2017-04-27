@@ -81,8 +81,8 @@ class THPlot {
         int GeneratePlot();
         TH1D GetHist() const;
         TH2D Get2DHist() const;
-        void SetHist(const TH1D &h);
-        void Set2DHist(const TH2D &h);
+        void SetHist(TH1D const &h);
+        void Set2DHist(TH2D const &h);
         std::string GetOutFilename() const;
         void SetOutFilename(std::string filename);
         void SetRunInfo(std::pair<std::string,std::string> info);
@@ -92,13 +92,13 @@ class THPlot {
         int cheight;
         TH1D hist; 
         TH2D hist2D; 
+        int nbinsx;
+        int nbinsy;
+        std::string name;
         std::string output_filename;
         std::pair<std::string,std::string> run_info;
 
     private:
-        std::string name;
-        int nbinsx;
-        int nbinsy;
         static void SetMyStyle_();
         double x_start_bin_;
         double x_end_bin_;

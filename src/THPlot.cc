@@ -119,11 +119,11 @@ TH2D THPlot::Get2DHist() const {
     return hist2D;
 }
 
-void THPlot::SetHist(const TH1D &h){
+void THPlot::SetHist(TH1D const &h){
     hist = h;
 }
 
-void THPlot::Set2DHist(const TH2D &h){
+void THPlot::Set2DHist(TH2D const &h){
     hist2D = h;
 }
 
