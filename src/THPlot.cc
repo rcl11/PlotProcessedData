@@ -108,63 +108,63 @@ void THPlot::SetMyStyle_() {
 
 
 std::string THPlot::GetName() const{
-    return name;
+    return name_;
 }
 
 TH1D THPlot::GetHist() const {
-    return hist;
+    return hist_;
 }
 
 TH2D THPlot::Get2DHist() const {
-    return hist2D;
+    return hist2D_;
 }
 
 void THPlot::SetHist(TH1D const &h){
-    hist = h;
+    hist_ = h;
 }
 
 void THPlot::Set2DHist(TH2D const &h){
-    hist2D = h;
+    hist2D_ = h;
 }
 
 std::string THPlot::GetOutFilename() const {
-    return output_filename;
+    return output_filename_;
 }
 
-void THPlot::SetOutFilename(std::string filename){
-    output_filename = filename;
+void THPlot::SetOutFilename(std::string const &filename){
+    output_filename_ = filename;
 }
 
-void THPlot::SetRunInfo(std::pair<std::string,std::string> info){
-    run_info = info;
+void THPlot::SetRunInfo(std::pair<std::string,std::string> const &info){
+    run_info_ = info;
 }
 
 
 int THPlot::GeneratePlot() {
     
     SetMyStyle_();
-    TCanvas* c1 = new TCanvas("c1","c1",cwidth,cheight);
+    TCanvas* c1 = new TCanvas("c1","c1",cwidth_,cheight_);
     if(!twoD_){
-      hist.GetYaxis()->SetTitle( y_title_.c_str() );
-      hist.GetXaxis()->SetTitle( x_title_.c_str() );
-      hist.SetFillStyle(1001);
-      hist.SetFillColor(TColor::GetColor(r_,g_,b_));
-      hist.SetMinimum(0.0);
-      hist.Draw("hist");
+      hist_.GetYaxis()->SetTitle( y_title_.c_str() );
+      hist_.GetXaxis()->SetTitle( x_title_.c_str() );
+      hist_.SetFillStyle(1001);
+      hist_.SetFillColor(TColor::GetColor(r_,g_,b_));
+      hist_.SetMinimum(0.0);
+      hist_.Draw("hist");
     } else {
-      hist2D.GetYaxis()->SetTitle( y_title_.c_str() );
-      hist2D.GetXaxis()->SetTitle( x_title_.c_str() );
-      hist2D.SetMarkerStyle(20);
-      hist2D.Draw("colz");
+      hist2D_.GetYaxis()->SetTitle( y_title_.c_str() );
+      hist2D_.GetXaxis()->SetTitle( x_title_.c_str() );
+      hist2D_.SetMarkerStyle(20);
+      hist2D_.Draw("colz");
     }
     TLatex *title_latex = new TLatex();
     title_latex->SetNDC();
     title_latex->SetTextSize(0.04);
-    title_latex->DrawLatex(0.55, 0.94, ("Run: "+run_info.first + " Subrun: " + run_info.second).c_str() );
+    title_latex->DrawLatex(0.55, 0.94, ("Run: "+run_info_.first + " Subrun: " + run_info_.second).c_str() );
     if(twoD_) c1->SetRightMargin(0.15);
     c1->Update();
-    c1->SaveAs((output_filename+".png").c_str());
-    c1->SaveAs((output_filename+".pdf").c_str());
+    c1->SaveAs((output_filename_+".png").c_str());
+    c1->SaveAs((output_filename_+".pdf").c_str());
     delete c1;
     delete title_latex;
     

@@ -28,18 +28,18 @@ class THPlot {
             std::string fill_colour;
             po::options_description desc("Options");
             desc.add_options()
-              ("name", po::value<std::string>(&name))
-              ("nbinsx", po::value<int>(&nbinsx))
-              ("nbinsy", po::value<int>(&nbinsy)->default_value(100))
+              ("name", po::value<std::string>(&name_))
+              ("nbinsx", po::value<int>(&nbinsx_))
+              ("nbinsy", po::value<int>(&nbinsy_)->default_value(100))
               ("x_start_bin", po::value<double>(&x_start_bin_))
               ("x_end_bin", po::value<double>(&x_end_bin_))
               ("y_start_bin", po::value<double>(&y_start_bin_)->default_value(0.0))
               ("y_end_bin", po::value<double>(&y_end_bin_)->default_value(100.0))
-              ("cwidth", po::value<int>(&cwidth)->default_value(700))
-              ("cheight", po::value<int>(&cheight)->default_value(500))
+              ("cwidth", po::value<int>(&cwidth_)->default_value(700))
+              ("cheight", po::value<int>(&cheight_)->default_value(500))
               ("log_x", po::value<bool>(&log_x_)->default_value(false))
               ("log_y", po::value<bool>(&log_y_)->default_value(false))
-              ("output_filename", po::value<std::string>(&output_filename))
+              ("output_filename", po::value<std::string>(&output_filename_))
               ("x_title", po::value<std::string>(&x_title_))
               ("y_title", po::value<std::string>(&y_title_))
               ("twoD", po::value<bool>(&twoD_)->default_value(false))
@@ -58,8 +58,8 @@ class THPlot {
             po::notify(vm);  
             
             SetMyStyle_();
-            if(twoD_) hist2D = TH2D(name.c_str(),name.c_str(),nbinsx,x_start_bin_,x_end_bin_,nbinsy,y_start_bin_,y_end_bin_);
-            else hist = TH1D(name.c_str(),name.c_str(),nbinsx,x_start_bin_,x_end_bin_);
+            if(twoD_) hist2D_ = TH2D(name_.c_str(),name_.c_str(),nbinsx_,x_start_bin_,x_end_bin_,nbinsy_,y_start_bin_,y_end_bin_);
+            else hist_ = TH1D(name_.c_str(),name_.c_str(),nbinsx_,x_start_bin_,x_end_bin_);
             std::stringstream ss(fill_colour);
             std::vector<Int_t> vect;
             Float_t i;
@@ -84,19 +84,10 @@ class THPlot {
         void SetHist(TH1D const &h);
         void Set2DHist(TH2D const &h);
         std::string GetOutFilename() const;
-        void SetOutFilename(std::string filename);
-        void SetRunInfo(std::pair<std::string,std::string> info);
+        void SetOutFilename(std::string const &filename);
+        void SetRunInfo(std::pair<std::string,std::string> const &info);
         std::string GetName() const;
 
-        int cwidth;
-        int cheight;
-        TH1D hist; 
-        TH2D hist2D; 
-        int nbinsx;
-        int nbinsy;
-        std::string name;
-        std::string output_filename;
-        std::pair<std::string,std::string> run_info;
 
     private:
         static void SetMyStyle_();
@@ -104,12 +95,21 @@ class THPlot {
         double x_end_bin_;
         double y_start_bin_;
         double y_end_bin_;
+        int nbinsx_;
+        int nbinsy_;
+        std::string name_;
         bool log_x_;
         bool log_y_;
         bool twoD_;
         std::string x_title_;
         std::string y_title_;
         Int_t r_, g_, b_;
+        int cwidth_;
+        int cheight_;
+        TH1D hist_; 
+        TH2D hist2D_; 
+        std::string output_filename_;
+        std::pair<std::string,std::string> run_info_;
 
 };
 
