@@ -58,8 +58,8 @@ class THPlot {
             po::notify(vm);  
             
             SetMyStyle_();
-            if(twoD_) hist2D = new TH2D(name.c_str(),name.c_str(),nbinsx,x_start_bin_,x_end_bin_,nbinsy,y_start_bin_,y_end_bin_);
-            else hist = new TH1D(name.c_str(),name.c_str(),nbinsx,x_start_bin_,x_end_bin_);
+            if(twoD_) hist2D = TH2D(name.c_str(),name.c_str(),nbinsx,x_start_bin_,x_end_bin_,nbinsy,y_start_bin_,y_end_bin_);
+            else hist = TH1D(name.c_str(),name.c_str(),nbinsx,x_start_bin_,x_end_bin_);
             std::stringstream ss(fill_colour);
             std::vector<Int_t> vect;
             Float_t i;
@@ -79,27 +79,26 @@ class THPlot {
         
         
         int GeneratePlot();
-        TH1D* GetHist();
-        TH2D* Get2DHist();
-        void SetHist(TH1D* h);
-        void Set2DHist(TH2D* h);
-        std::string GetOutFilename();
+        TH1D GetHist() const;
+        TH2D Get2DHist() const;
+        void SetHist(const TH1D &h);
+        void Set2DHist(const TH2D &h);
+        std::string GetOutFilename() const;
         void SetOutFilename(std::string filename);
         void SetRunInfo(std::pair<std::string,std::string> info);
+        std::string GetName() const;
 
+        int cwidth;
+        int cheight;
+        TH1D hist; 
+        TH2D hist2D; 
+        std::string output_filename;
+        std::pair<std::string,std::string> run_info;
+
+    private:
         std::string name;
         int nbinsx;
         int nbinsy;
-        int cwidth;
-        int cheight;
-        TH1D* hist; 
-        TH2D* hist2D; 
-        std::string output_filename;
-        std::pair<std::string,std::string> run_info;
-        std::string GetName();
-
-    private:
-        int *ptr;
         static void SetMyStyle_();
         double x_start_bin_;
         double x_end_bin_;

@@ -89,73 +89,75 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
     //Create a collection of histograms
     std::map<std::string,THPlot::THPlot> plot_map = ParseConfigs();
     THPlot::THPlot nhits_plot(plot_map["nhits"]);
-    TH1D* hnhits = nhits_plot.GetHist(); 
+    TH1D hnhits = nhits_plot.GetHist(); 
     THPlot::THPlot nhits_pulseGT_plot(plot_map["nhits_pulseGT"]);
-    TH1D* hnhits_pulseGT = nhits_pulseGT_plot.GetHist(); 
+    TH1D hnhits_pulseGT = nhits_pulseGT_plot.GetHist(); 
     THPlot::THPlot nhits_N100M_plot(plot_map["nhits_N100M"]);
-    TH1D* hnhits_N100M = nhits_N100M_plot.GetHist(); 
+    TH1D hnhits_N100M = nhits_N100M_plot.GetHist(); 
     THPlot::THPlot nhits_N100H_plot(plot_map["nhits_N100H"]);
-    TH1D* hnhits_N100H = nhits_N100H_plot.GetHist(); 
+    TH1D hnhits_N100H = nhits_N100H_plot.GetHist(); 
     THPlot::THPlot nhits_N20_plot(plot_map["nhits_N20"]);
-    TH1D* hnhits_N20 = nhits_N20_plot.GetHist(); 
+    TH1D hnhits_N20 = nhits_N20_plot.GetHist(); 
     THPlot::THPlot nhits_ESUMH_plot(plot_map["nhits_ESUMH"]);
-    TH1D* hnhits_ESUMH = nhits_ESUMH_plot.GetHist(); 
+    TH1D hnhits_ESUMH = nhits_ESUMH_plot.GetHist(); 
     THPlot::THPlot nhits_OWLEH_plot(plot_map["nhits_OWLEH"]);
-    TH1D* hnhits_OWLEH = nhits_OWLEH_plot.GetHist(); 
+    TH1D hnhits_OWLEH = nhits_OWLEH_plot.GetHist(); 
     THPlot::THPlot totalQ_plot(plot_map["totalQ"]);
-    TH1D* htotalQ = totalQ_plot.GetHist(); 
+    TH1D htotalQ = totalQ_plot.GetHist(); 
     THPlot::THPlot totalQ_pulseGT_plot(plot_map["totalQ_pulseGT"]);
-    TH1D* htotalQ_pulseGT = totalQ_pulseGT_plot.GetHist(); 
+    TH1D htotalQ_pulseGT = totalQ_pulseGT_plot.GetHist(); 
     THPlot::THPlot totalQ_N100M_plot(plot_map["totalQ_N100M"]);
-    TH1D* htotalQ_N100M = totalQ_N100M_plot.GetHist(); 
+    TH1D htotalQ_N100M = totalQ_N100M_plot.GetHist(); 
     THPlot::THPlot totalQ_N100H_plot(plot_map["totalQ_N100H"]);
-    TH1D* htotalQ_N100H = totalQ_N100H_plot.GetHist(); 
+    TH1D htotalQ_N100H = totalQ_N100H_plot.GetHist(); 
     THPlot::THPlot totalQ_N20_plot(plot_map["totalQ_N20"]);
-    TH1D* htotalQ_N20 = totalQ_N20_plot.GetHist(); 
+    TH1D htotalQ_N20 = totalQ_N20_plot.GetHist(); 
     THPlot::THPlot totalQ_ESUMH_plot(plot_map["totalQ_ESUMH"]);
-    TH1D* htotalQ_ESUMH = totalQ_ESUMH_plot.GetHist(); 
+    TH1D htotalQ_ESUMH = totalQ_ESUMH_plot.GetHist(); 
     THPlot::THPlot totalQ_OWLEH_plot(plot_map["totalQ_OWLEH"]);
-    TH1D* htotalQ_OWLEH = totalQ_OWLEH_plot.GetHist(); 
+    TH1D htotalQ_OWLEH = totalQ_OWLEH_plot.GetHist(); 
     THPlot::THPlot fitValid_plot(plot_map["fitValid"]);
-    TH1D* hfitValid = fitValid_plot.GetHist(); 
+    TH1D hfitValid = fitValid_plot.GetHist(); 
     THPlot::THPlot itr_plot(plot_map["itr"]);
-    TH1D* hitr = itr_plot.GetHist(); 
+    TH1D hitr = itr_plot.GetHist(); 
     THPlot::THPlot posx_plot(plot_map["posx"]);
-    TH1D* hposx = posx_plot.GetHist(); 
+    TH1D hposx = posx_plot.GetHist(); 
     THPlot::THPlot posy_plot(plot_map["posy"]);
-    TH1D* hposy = posy_plot.GetHist(); 
+    TH1D hposy = posy_plot.GetHist(); 
     THPlot::THPlot posz_plot(plot_map["posz"]);
-    TH1D* hposz = posz_plot.GetHist(); 
+    TH1D hposz = posz_plot.GetHist(); 
     THPlot::THPlot posR_plot(plot_map["posR"]);
-    TH1D* hposR = posR_plot.GetHist(); 
+    TH1D hposR = posR_plot.GetHist(); 
     THPlot::THPlot posR3_plot(plot_map["posR3"]);
-    TH1D* hposR3 = posR3_plot.GetHist(); 
+    TH1D hposR3 = posR3_plot.GetHist(); 
     THPlot::THPlot rpmt_plot(plot_map["rpmt"]);
-    TH1D* hrpmt = rpmt_plot.GetHist(); 
+    TH1D hrpmt = rpmt_plot.GetHist(); 
     THPlot::THPlot xpmt_plot(plot_map["xpmt"]);
-    TH1D* hxpmt = xpmt_plot.GetHist(); 
+    TH1D hxpmt = xpmt_plot.GetHist(); 
     THPlot::THPlot ypmt_plot(plot_map["ypmt"]);
-    TH1D* hypmt = ypmt_plot.GetHist(); 
+    TH1D hypmt = ypmt_plot.GetHist(); 
     THPlot::THPlot zpmt_plot(plot_map["zpmt"]);
-    TH1D* hzpmt = zpmt_plot.GetHist(); 
+    TH1D hzpmt = zpmt_plot.GetHist(); 
     THPlot::THPlot tpmt_plot(plot_map["tpmt"]);
-    TH1D* htpmt = tpmt_plot.GetHist(); 
+    TH1D htpmt = tpmt_plot.GetHist(); 
     THPlot::THPlot posxy_plot(plot_map["posxy"]);
-    TH2D* hposxy = posxy_plot.Get2DHist(); 
+    TH2D hposxy = posxy_plot.Get2DHist(); 
     THPlot::THPlot posrz_plot(plot_map["posrz"]);
-    TH2D* hposrz = posrz_plot.Get2DHist(); 
+    TH2D hposrz = posrz_plot.Get2DHist(); 
     THPlot::THPlot posRz_plot(plot_map["posRz"]);
-    TH2D* hposRz = posRz_plot.Get2DHist(); 
+    TH2D hposRz = posRz_plot.Get2DHist(); 
+    THPlot::THPlot nhitsz_plot(plot_map["nhitsz"]);
+    TH2D hnhitsz = nhitsz_plot.Get2DHist(); 
     THPlot::THPlot duration_plot(plot_map["duration"]);
-    TH1D* hduration = duration_plot.GetHist(); 
+    TH1D hduration = duration_plot.GetHist(); 
     THPlot::THPlot trigger_plot(plot_map["trigger"]);
-    TH1D* htrigger = trigger_plot.GetHist(); 
+    TH1D htrigger = trigger_plot.GetHist(); 
   
     TFile *f = new TFile(files[i].c_str());
     
     std::vector<std::string> trig_names = {"N100L","N100M","N100H","N20","N20LB","ESUML","ESUMH","OWLN","OWLEL","OWLEH","PULGT"}; 
     for(unsigned h=0;h<trig_names.size();h++){
-      htrigger->GetXaxis()->SetBinLabel(h+1,trig_names[h].c_str());
+      htrigger.GetXaxis()->SetBinLabel(h+1,trig_names[h].c_str());
     }
   
     int n_cleanevents=0;
@@ -218,76 +220,77 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
         //analysis_mask without tpmuonfollowercut-short
         bool compatibility_cut = (applied_flag & 0b11111111111110) == 0b11111111111110;
         if(dataclean && compatibility_cut) {
-          hnhits->Fill(nhits);
-          htotalQ->Fill(charge);
+          hnhits.Fill(nhits);
+          htotalQ.Fill(charge);
           //Fill some nhits and total q plots for different triggers fired
           std::bitset<32> bits = std::bitset<32>(triggerWord);
           //Numbers to test taken from RAT documentation
           if(bits.test(10)){
-            hnhits_pulseGT->Fill(nhits);
-            htotalQ_pulseGT->Fill(charge);
-            htrigger->Fill("PULGT", 1);
+            hnhits_pulseGT.Fill(nhits);
+            htotalQ_pulseGT.Fill(charge);
+            htrigger.Fill("PULGT", 1);
           }
           if(bits.test(0)){
-            htrigger->Fill("N100L", 1);
+            htrigger.Fill("N100L", 1);
           }
           if(bits.test(1)){
-            hnhits_N100M->Fill(nhits);
-            htotalQ_N100M->Fill(charge);
-            htrigger->Fill("N100M", 1);
+            hnhits_N100M.Fill(nhits);
+            htotalQ_N100M.Fill(charge);
+            htrigger.Fill("N100M", 1);
           }
           if(bits.test(2)){
-            hnhits_N100H->Fill(nhits);
-            htotalQ_N100H->Fill(charge);
-            htrigger->Fill("N100H", 1);
+            hnhits_N100H.Fill(nhits);
+            htotalQ_N100H.Fill(charge);
+            htrigger.Fill("N100H", 1);
           }
           if(bits.test(3)){
-            hnhits_N20->Fill(nhits);
-            htotalQ_N20->Fill(charge);
-            htrigger->Fill("N20", 1);
+            hnhits_N20.Fill(nhits);
+            htotalQ_N20.Fill(charge);
+            htrigger.Fill("N20", 1);
           }
           if(bits.test(4)){
-            htrigger->Fill("N20LB", 1);
+            htrigger.Fill("N20LB", 1);
           }
           if(bits.test(5)){
-            htrigger->Fill("ESUML", 1);
+            htrigger.Fill("ESUML", 1);
           }
           if(bits.test(6)){
-            hnhits_ESUMH->Fill(nhits);
-            htotalQ_ESUMH->Fill(charge);
-            htrigger->Fill("ESUMH", 1);
+            hnhits_ESUMH.Fill(nhits);
+            htotalQ_ESUMH.Fill(charge);
+            htrigger.Fill("ESUMH", 1);
           }
           if(bits.test(7)){
-            htrigger->Fill("OWLN", 1);
+            htrigger.Fill("OWLN", 1);
           }
           if(bits.test(8)){
-            htrigger->Fill("OWLEL", 1);
+            htrigger.Fill("OWLEL", 1);
           }
           if(bits.test(9)){
-            hnhits_OWLEH->Fill(nhits);
-            htotalQ_OWLEH->Fill(charge);
-            htrigger->Fill("OWLEH", 1);
+            hnhits_OWLEH.Fill(nhits);
+            htotalQ_OWLEH.Fill(charge);
+            htrigger.Fill("OWLEH", 1);
           }
           //std::cout << "testing pulseGT trigger " << bits.test(10) << " " << htrigger->GetBinContent(11) << std::endl; 
-          hfitValid->Fill(fit_valid); 
+          hfitValid.Fill(fit_valid); 
           if(fit_valid){
-            hposrz->Fill(sqrt(posx*posx + posy*posy), posz);
-            hposx->Fill(posx);
-            hposy->Fill(posy);
-            hposz->Fill(posz);
-            hposxy->Fill(posx,posy);
+            hposrz.Fill(sqrt(posx*posx + posy*posy), posz);
+            hposx.Fill(posx);
+            hposy.Fill(posy);
+            hposz.Fill(posz);
+            hposxy.Fill(posx,posy);
+            hnhitsz.Fill(nhits,posz);
             double R = sqrt(posx*posx + posy*posy + posz*posz);
-            hposR->Fill(R);
-            hposR3->Fill(pow(R,3)/pow(6005.3,3));
-            hposRz->Fill(R, posz);
-            hitr->Fill(itr); 
+            hposR.Fill(R);
+            hposR3.Fill(pow(R,3)/pow(6005.3,3));
+            hposRz.Fill(R, posz);
+            hitr.Fill(itr); 
           }
           n_cleanevents++;
         }
         n_events++;
       }
       run_duration = (end_days-start_days)*60*60*24 + (end_secs-start_secs) + ((end_nsecs-start_nsecs) * 1E-9);
-      hduration->Fill(run_duration);
+      hduration.Fill(run_duration);
     } else {
       RAT::DU::DSReader dsReader( files[i] );
       const RAT::DU::PMTInfo& pmtInfo = RAT::DU::Utility::Get()->GetPMTInfo();
@@ -309,88 +312,89 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
           n_events++;
           if(RAT::EventIsClean( rEV, rMeta, rDataCleaningWord )){
             n_cleanevents++;
-            hnhits->Fill( rEV.GetNhits() );
-            htotalQ->Fill( rEV.GetTotalCharge() );
+            hnhits.Fill( rEV.GetNhits() );
+            htotalQ.Fill( rEV.GetTotalCharge() );
             //Fill some nhits and total q plots for different triggers fired
             //std::cout << std::bitset<32>(rEV.GetTrigType())/*.to_string()*/ << std::endl;
             if(RAT::BitManip::TestBit(rEV.GetTrigType(), RAT::DU::TrigBits::N100Low)){
-                htrigger->Fill("N100L", 1);
+                htrigger.Fill("N100L", 1);
             }
             if(RAT::BitManip::TestBit(rEV.GetTrigType(), RAT::DU::TrigBits::N100Med)){
-                hnhits_N100M->Fill(rEV.GetNhits()); 
-                htotalQ_N100M->Fill( rEV.GetTotalCharge() );
-                htrigger->Fill("N100M", 1);
+                hnhits_N100M.Fill(rEV.GetNhits()); 
+                htotalQ_N100M.Fill( rEV.GetTotalCharge() );
+                htrigger.Fill("N100M", 1);
             }
             if(RAT::BitManip::TestBit(rEV.GetTrigType(), RAT::DU::TrigBits::N100High)){
-                hnhits_N100H->Fill(rEV.GetNhits()); 
-                htotalQ_N100H->Fill( rEV.GetTotalCharge() );
-                htrigger->Fill("N100H", 1);
+                hnhits_N100H.Fill(rEV.GetNhits()); 
+                htotalQ_N100H.Fill( rEV.GetTotalCharge() );
+                htrigger.Fill("N100H", 1);
             }
             if(RAT::BitManip::TestBit(rEV.GetTrigType(), RAT::DU::TrigBits::N20)){
-                hnhits_N20->Fill(rEV.GetNhits()); 
-                htotalQ_N20->Fill( rEV.GetTotalCharge() );
-                htrigger->Fill("N20", 1);
+                hnhits_N20.Fill(rEV.GetNhits()); 
+                htotalQ_N20.Fill( rEV.GetTotalCharge() );
+                htrigger.Fill("N20", 1);
             }
             if(RAT::BitManip::TestBit(rEV.GetTrigType(), RAT::DU::TrigBits::N20LB)){
-                htrigger->Fill("N20LB", 1);
+                htrigger.Fill("N20LB", 1);
             }
             if(RAT::BitManip::TestBit(rEV.GetTrigType(), RAT::DU::TrigBits::ESLow)){
-                htrigger->Fill("ESUML", 1);
+                htrigger.Fill("ESUML", 1);
             }
             if(RAT::BitManip::TestBit(rEV.GetTrigType(), RAT::DU::TrigBits::ESHigh)){
-                hnhits_ESUMH->Fill(rEV.GetNhits()); 
-                htotalQ_ESUMH->Fill( rEV.GetTotalCharge() );
-                htrigger->Fill("ESUMH", 1);
+                hnhits_ESUMH.Fill(rEV.GetNhits()); 
+                htotalQ_ESUMH.Fill( rEV.GetTotalCharge() );
+                htrigger.Fill("ESUMH", 1);
             }
             if(RAT::BitManip::TestBit(rEV.GetTrigType(), RAT::DU::TrigBits::OWLN)){
-                htrigger->Fill("OWLN", 1);
+                htrigger.Fill("OWLN", 1);
             }
             if(RAT::BitManip::TestBit(rEV.GetTrigType(), RAT::DU::TrigBits::OWLESLow)){
-                htrigger->Fill("OWLEL", 1);
+                htrigger.Fill("OWLEL", 1);
             }
             if(RAT::BitManip::TestBit(rEV.GetTrigType(), RAT::DU::TrigBits::OWLESHigh)){
-                hnhits_OWLEH->Fill(rEV.GetNhits()); 
-                htotalQ_OWLEH->Fill( rEV.GetTotalCharge() );
-                htrigger->Fill("OWLEH", 1);
+                hnhits_OWLEH.Fill(rEV.GetNhits()); 
+                htotalQ_OWLEH.Fill( rEV.GetTotalCharge() );
+                htrigger.Fill("OWLEH", 1);
             }
             if(RAT::BitManip::TestBit(rEV.GetTrigType(), RAT::DU::TrigBits::PulseGT)){
-                hnhits_pulseGT->Fill(rEV.GetNhits()); 
-                htotalQ_pulseGT->Fill( rEV.GetTotalCharge() );
-                htrigger->Fill("PULGT", 1);
+                hnhits_pulseGT.Fill(rEV.GetNhits()); 
+                htotalQ_pulseGT.Fill( rEV.GetTotalCharge() );
+                htrigger.Fill("PULGT", 1);
             }
                   
             if(rEV.FitResultExists("waterFitter") && rEV.GetFitResult("waterFitter").GetValid()){
                 RAT::DS::FitVertex rvertex = rEV.GetFitResult("waterFitter").GetVertex(0);
               if( rvertex.ContainsPosition() && rvertex.ValidPosition() ) {
-                hfitValid->Fill(1.);
+                hfitValid.Fill(1.);
                 double R = sqrt(rvertex.GetPosition().X()*rvertex.GetPosition().X()  + rvertex.GetPosition().Y()*rvertex.GetPosition().Y() + rvertex.GetPosition().Z()*rvertex.GetPosition().Z());
-                hposx->Fill(rvertex.GetPosition().X());
-                hposy->Fill(rvertex.GetPosition().Y());
-                hposz->Fill(rvertex.GetPosition().Z());
-                hposxy->Fill(rvertex.GetPosition().X(),rvertex.GetPosition().Y());
-                hposRz->Fill(R,rvertex.GetPosition().Z());
-                hposrz->Fill(sqrt(rvertex.GetPosition().X()*rvertex.GetPosition().X() + rvertex.GetPosition().Y()*rvertex.GetPosition().Y()),rvertex.GetPosition().Z());
-                hposR->Fill(R );
-                hposR3->Fill(pow(R,3)/pow(6005.3,3));
-                hitr->Fill(rEV.GetClassifierResult("ITR:waterFitter").GetClassification("ITR"));
-              } else hfitValid->Fill(0.);
-            } else hfitValid->Fill(0.);
+                hposx.Fill(rvertex.GetPosition().X());
+                hposy.Fill(rvertex.GetPosition().Y());
+                hposz.Fill(rvertex.GetPosition().Z());
+                hposxy.Fill(rvertex.GetPosition().X(),rvertex.GetPosition().Y());
+                hnhitsz.Fill(rEV.GetNhits(),rvertex.GetPosition().Z());
+                hposRz.Fill(R,rvertex.GetPosition().Z());
+                hposrz.Fill(sqrt(rvertex.GetPosition().X()*rvertex.GetPosition().X() + rvertex.GetPosition().Y()*rvertex.GetPosition().Y()),rvertex.GetPosition().Z());
+                hposR.Fill(R );
+                hposR3.Fill(pow(R,3)/pow(6005.3,3));
+                hitr.Fill(rEV.GetClassifierResult("ITR:waterFitter").GetClassification("ITR"));
+              } else hfitValid.Fill(0.);
+            } else hfitValid.Fill(0.);
             RAT::DS::CalPMTs& calpmts = rEV.GetCalPMTs();
             //NOTE: i think we should return to GetCount() and GetPMT() after next reprocess (assuming we want to include the "inward" PMTs (normal + HQE) not just "normal" here)
             for(unsigned int ipmt=0;ipmt<calpmts.GetNormalCount();ipmt++){
               TVector3 pmtpos = pmtInfo.GetPosition(calpmts.GetNormalPMT(ipmt).GetID());
               double pmt_r = pmtpos.Mag();
-              hrpmt->Fill(pmt_r);
-              hxpmt->Fill(pmtpos.X());
-              hypmt->Fill(pmtpos.Y());
-              hzpmt->Fill(pmtpos.Z());
-              htpmt->Fill((calpmts.GetNormalPMT(ipmt)).GetTime());
+              hrpmt.Fill(pmt_r);
+              hxpmt.Fill(pmtpos.X());
+              hypmt.Fill(pmtpos.Y());
+              hzpmt.Fill(pmtpos.Z());
+              htpmt.Fill((calpmts.GetNormalPMT(ipmt)).GetTime());
             }
           }
         }
       }
       run_duration = ((end_time-start_time).GetDays())*60*60*24 + ((end_time-start_time).GetSeconds()) + ((end_time-start_time).GetNanoSeconds() * 1E-9);
-      hduration->Fill(run_duration);
+      hduration.Fill(run_duration);
     }
     
     nhits_plot.SetHist(hnhits);
@@ -422,6 +426,7 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
     duration_plot.SetHist(hduration);
     trigger_plot.SetHist(htrigger);
     posxy_plot.Set2DHist(hposxy);
+    nhitsz_plot.Set2DHist(hnhitsz);
     posrz_plot.Set2DHist(hposrz);
     posRz_plot.Set2DHist(hposRz);
   
@@ -439,14 +444,14 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
         plot.GeneratePlot();
     }
     //Code for the vs run plots. For now dont use the class for this
-    hnhits_vs_run->Fill(i, hnhits->GetMean());
-    hnhits_vs_run->SetBinError(i+1,hnhits->GetMeanError());
+    hnhits_vs_run->Fill(i, hnhits.GetMean());
+    hnhits_vs_run->SetBinError(i+1,hnhits.GetMeanError());
     std::string bin_label = run_info.first;
     if(i==0) start_run = bin_label;
     if(i==files.size()-1) end_run = bin_label;
     hnhits_vs_run->GetXaxis()->SetBinLabel(i+1,bin_label.c_str());
-    htotalQ_vs_run->Fill(i, htotalQ->GetMean());
-    htotalQ_vs_run->SetBinError(i+1,htotalQ->GetMeanError());
+    htotalQ_vs_run->Fill(i, htotalQ.GetMean());
+    htotalQ_vs_run->SetBinError(i+1,htotalQ.GetMeanError());
     htotalQ_vs_run->GetXaxis()->SetBinLabel(i+1,bin_label.c_str());
     hNCleanEvents_vs_run->Fill(i, n_cleanevents);
     hNCleanEvents_vs_run->SetBinError(i+1,sqrt(n_cleanevents));
@@ -460,7 +465,9 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
     hFracCleanEvents_vs_run->Fill(i, float(n_cleanevents)/float(n_events));
     hFracCleanEvents_vs_run->SetBinError(i+1,sqrt( pow((sqrt(n_cleanevents)/n_cleanevents),2) + pow((sqrt(n_events)/n_events),2)));
     hFracCleanEvents_vs_run->GetXaxis()->SetBinLabel(i+1,bin_label.c_str());
+    delete f;
   }
+  
 
   SetStyle();
   TCanvas* c100 = new TCanvas("c100","c100",1000,400);
