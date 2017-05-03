@@ -180,13 +180,9 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
           end_nsecs = uTNSecs;
         }
         //analysis_mask
-        //bool dataclean = !(flag & 0b111111111111110);
-        //analysis_mask without tpmuonfollowercut-short
-        bool dataclean = !(flag & 0b11111111111110);
+        bool dataclean = ( (flag & 0b111111111111110) == 0b111111111111110);
         //analysis_mask
-        //bool compatibility_cut = (applied_flag & 0b111111111111110) == 0b111111111111110;
-        //analysis_mask without tpmuonfollowercut-short
-        bool compatibility_cut = (applied_flag & 0b11111111111110) == 0b11111111111110;
+        bool compatibility_cut = (applied_flag & 0b111111111111110) == 0b111111111111110;
         if(dataclean && compatibility_cut) {
           hnhits.Fill(nhits);
           htotalQ.Fill(charge);
@@ -262,9 +258,7 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
     } else {
       RAT::DU::DSReader dsReader( files[i] );
       const RAT::DU::PMTInfo& pmtInfo = RAT::DU::Utility::Get()->GetPMTInfo();
-      //Add data cleaning cut. Note should possibly be changed to "analysis_mask" once bug is fixed with tpmuonfollowercut
-      //ULong64_t rDataCleaningWord = RAT::GetDataCleaningWord( "analysis_mask" );
-      //Temporary mask removing tpmuonfollowercut-short which has a bug for this production
+      //Add data cleaning cut.
       ULong64_t rDataCleaningWord = RAT::GetDataCleaningWord( "analysis_mask" );
       RAT::DS::UniversalTime start_time;
       RAT::DS::UniversalTime end_time;
