@@ -78,11 +78,12 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
   TH1D* hNCleanEvents_vs_run = new TH1D( "hNCleanEvents_vs_run", "Number of clean events per run", files.size(), 0.0, files.size() );
   TH1D* hNCleanEventsnorm_vs_run = new TH1D( "hNCleanEventsnorm_vs_run", "Normalised number of clean events per run", files.size(), 0.0, files.size() );
   TH1D* hFracCleanEvents_vs_run = new TH1D( "hFracCleanEvents_vs_run", "Fraction of clean events per run", files.size(), 0.0, files.size() );
-  std::string start_run;
-  std::string end_run;
+  std::string start_run = "";
+  std::string end_run = "";
   std::string postfix = "";
   if(ntuple) postfix = "_ntuple";
   double run_duration = 0;
+  int file_count=0;
   
   for(unsigned i=0; i<files.size(); ++i){
       
@@ -342,15 +343,14 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
               } else hfitValid.Fill(0.);
             } else hfitValid.Fill(0.);
             RAT::DS::CalPMTs& calpmts = rEV.GetCalPMTs();
-            //NOTE: i think we should return to GetCount() and GetPMT() after next reprocess (assuming we want to include the "inward" PMTs (normal + HQE) not just "normal" here)
-            for(unsigned int ipmt=0;ipmt<calpmts.GetNormalCount();ipmt++){
-              TVector3 pmtpos = pmtInfo.GetPosition(calpmts.GetNormalPMT(ipmt).GetID());
+            for(unsigned int ipmt=0;ipmt<calpmts.GetCount();ipmt++){
+              TVector3 pmtpos = pmtInfo.GetPosition(calpmts.GetPMT(ipmt).GetID());
               double pmt_r = pmtpos.Mag();
               hrpmt.Fill(pmt_r);
               hxpmt.Fill(pmtpos.X());
               hypmt.Fill(pmtpos.Y());
               hzpmt.Fill(pmtpos.Z());
-              htpmt.Fill((calpmts.GetNormalPMT(ipmt)).GetTime());
+              htpmt.Fill((calpmts.GetPMT(ipmt)).GetTime());
             }
           }
         }
@@ -404,29 +404,33 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
         plot.SetRunInfo(run_info);
         plot.GeneratePlot();
     }
+    //Dont bother plotting any runs which last less than 1 minute in the comparison plots
+    if(run_duration < 60) continue;
+    //Count the files/runs which are deemed good by whatever conditions we want to set
+    file_count++;
 
     //Code for the vs run plots. For now dont use the class for this
-    hnhits_vs_run->Fill(i, hnhits.GetMean());
-    hnhits_vs_run->SetBinError(i+1,hnhits.GetMeanError());
+    hnhits_vs_run->Fill(file_count-1, hnhits.GetMean());
+    hnhits_vs_run->SetBinError(file_count,hnhits.GetMeanError());
     std::string bin_label = run_info.first;
-    if(i==0) start_run = bin_label;
-    if(i==files.size()-1) end_run = bin_label;
-    hnhits_vs_run->GetXaxis()->SetBinLabel(i+1,bin_label.c_str());
-    htotalQ_vs_run->Fill(i, htotalQ.GetMean());
-    htotalQ_vs_run->SetBinError(i+1,htotalQ.GetMeanError());
-    htotalQ_vs_run->GetXaxis()->SetBinLabel(i+1,bin_label.c_str());
-    hNCleanEvents_vs_run->Fill(i, n_cleanevents);
-    hNCleanEvents_vs_run->SetBinError(i+1,sqrt(n_cleanevents));
-    hNCleanEvents_vs_run->GetXaxis()->SetBinLabel(i+1,bin_label.c_str());
-    hNEvents_vs_run->Fill(i, n_events);
-    hNEvents_vs_run->SetBinError(i+1,sqrt(n_events));
-    hNEvents_vs_run->GetXaxis()->SetBinLabel(i+1,bin_label.c_str());
-    hNCleanEventsnorm_vs_run->Fill(i, n_cleanevents/run_duration);
-    hNCleanEventsnorm_vs_run->SetBinError(i+1,sqrt(n_cleanevents/run_duration));
-    hNCleanEventsnorm_vs_run->GetXaxis()->SetBinLabel(i+1,bin_label.c_str());
-    hFracCleanEvents_vs_run->Fill(i, float(n_cleanevents)/float(n_events));
-    hFracCleanEvents_vs_run->SetBinError(i+1,sqrt( pow((sqrt(n_cleanevents)/n_cleanevents),2) + pow((sqrt(n_events)/n_events),2)));
-    hFracCleanEvents_vs_run->GetXaxis()->SetBinLabel(i+1,bin_label.c_str());
+    if(file_count==1) start_run = bin_label;
+    end_run = bin_label;
+    hnhits_vs_run->GetXaxis()->SetBinLabel(file_count,bin_label.c_str());
+    htotalQ_vs_run->Fill(file_count-1, htotalQ.GetMean());
+    htotalQ_vs_run->SetBinError(file_count,htotalQ.GetMeanError());
+    htotalQ_vs_run->GetXaxis()->SetBinLabel(file_count,bin_label.c_str());
+    hNCleanEvents_vs_run->Fill(file_count-1, n_cleanevents);
+    hNCleanEvents_vs_run->SetBinError(file_count,sqrt(n_cleanevents));
+    hNCleanEvents_vs_run->GetXaxis()->SetBinLabel(file_count,bin_label.c_str());
+    hNEvents_vs_run->Fill(file_count-1, n_events);
+    hNEvents_vs_run->SetBinError(file_count,sqrt(n_events));
+    hNEvents_vs_run->GetXaxis()->SetBinLabel(file_count,bin_label.c_str());
+    hNCleanEventsnorm_vs_run->Fill(file_count-1, n_cleanevents/run_duration);
+    hNCleanEventsnorm_vs_run->SetBinError(file_count,sqrt(n_cleanevents/run_duration));
+    hNCleanEventsnorm_vs_run->GetXaxis()->SetBinLabel(file_count,bin_label.c_str());
+    hFracCleanEvents_vs_run->Fill(file_count-1, float(n_cleanevents)/float(n_events));
+    hFracCleanEvents_vs_run->SetBinError(file_count,sqrt( pow((sqrt(n_cleanevents)/n_cleanevents),2) + pow((sqrt(n_events)/n_events),2)));
+    hFracCleanEvents_vs_run->GetXaxis()->SetBinLabel(file_count,bin_label.c_str());
     delete f;
   }
   
@@ -439,6 +443,8 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
   hnhits_vs_run->GetYaxis()->SetTitle( "Mean #Hits" );
   hnhits_vs_run->GetXaxis()->SetTitle( "Run ID" );
   hnhits_vs_run->GetXaxis()->SetTitleOffset(1.9);
+  //Necessary rescale of axis to get rid of empty bins where we didnt fill because the run wasn't good
+  hnhits_vs_run->GetXaxis()->SetRangeUser(0,file_count);
   hnhits_vs_run->Draw("PE1");
   c100->SetLeftMargin(0.1);
   c100->SetBottomMargin(0.18);
@@ -452,6 +458,7 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
   htotalQ_vs_run->GetYaxis()->SetTitle( "Mean totalQ" );
   htotalQ_vs_run->GetXaxis()->SetTitle( "Run ID" );
   htotalQ_vs_run->GetXaxis()->SetTitleOffset(1.9);
+  htotalQ_vs_run->GetXaxis()->SetRangeUser(0,file_count);
   htotalQ_vs_run->Draw("PE1");
   c100->Update();
   c100->SaveAs((output_dir+"totalQ_vs_run_"+start_run+"_to_"+end_run+postfix+".png").c_str());
@@ -463,6 +470,7 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
   hNCleanEvents_vs_run->GetYaxis()->SetTitle( "# Clean Events" );
   hNCleanEvents_vs_run->GetXaxis()->SetTitle( "Run ID" );
   hNCleanEvents_vs_run->GetXaxis()->SetTitleOffset(1.9);
+  hNCleanEvents_vs_run->GetXaxis()->SetRangeUser(0,file_count);
   hNCleanEvents_vs_run->Draw("PE1");
   c100->Update();
   c100->SaveAs((output_dir+"ncleanevents_vs_run_"+start_run+"_to_"+end_run+postfix+".png").c_str());
@@ -474,6 +482,7 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
   hNEvents_vs_run->GetYaxis()->SetTitle( "# Events" );
   hNEvents_vs_run->GetXaxis()->SetTitle( "Run ID" );
   hNEvents_vs_run->GetXaxis()->SetTitleOffset(1.9);
+  hNEvents_vs_run->GetXaxis()->SetRangeUser(0,file_count);
   hNEvents_vs_run->Draw("PE1");
   c100->Update();
   c100->SaveAs((output_dir+"nevents_vs_run_"+start_run+"_to_"+end_run+postfix+".png").c_str());
@@ -485,6 +494,7 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
   hNCleanEventsnorm_vs_run->GetYaxis()->SetTitle( "# Clean events per second" );
   hNCleanEventsnorm_vs_run->GetXaxis()->SetTitle( "Run ID" );
   hNCleanEventsnorm_vs_run->GetXaxis()->SetTitleOffset(1.9);
+  hNCleanEventsnorm_vs_run->GetXaxis()->SetRangeUser(0,file_count);
   hNCleanEventsnorm_vs_run->Draw("PE1");
   c100->Update();
   c100->SaveAs((output_dir+"ncleaneventsnorm_vs_run_"+start_run+"_to_"+end_run+postfix+".png").c_str());
@@ -496,6 +506,7 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
   hFracCleanEvents_vs_run->GetYaxis()->SetTitle( "Fraction of clean Events" );
   hFracCleanEvents_vs_run->GetXaxis()->SetTitle( "Run ID" );
   hFracCleanEvents_vs_run->GetXaxis()->SetTitleOffset(1.9);
+  hFracCleanEvents_vs_run->GetXaxis()->SetRangeUser(0,file_count);
   hFracCleanEvents_vs_run->Draw("PE1");
   c100->Update();
   c100->SaveAs((output_dir+"fraccleanevents_vs_run_"+start_run+"_to_"+end_run+postfix+".png").c_str());
@@ -536,7 +547,27 @@ int main(int argc, char** argv){
   //Possible to use both ntuple files or ratds files. Assumes that the txt file containing the filelist follows my naming convention
   bool ntuple=false;
   if(files[0].find("ntuple")!=std::string::npos) ntuple=true;
-  CreateRunPlots(files,ntuple,directory);
+  
+  //Split up the filelists into 20 runs at a time in order to make manageable webpages
+  std::vector<std::vector<std::string>> file_vecs;
+  std::vector<std::string> file_vec;
+  for(unsigned i=0; i<files.size(); i++){
+    file_vec.push_back(files[i]);
+    std::cout << file_vec.size() << std::endl;
+    if(i % 20 == 0 && i>0) {
+      std::vector<std::string> file_vec_temp = file_vec;
+      file_vecs.push_back(file_vec_temp);
+      file_vec.clear();
+    }
+  }
+  
+  for(unsigned j=0; j<file_vecs.size(); j++){
+    std::stringstream ss;
+    ss << j;
+    std::string dirname = directory+ss.str()+"/";
+    fs::create_directory(dirname.c_str());
+    CreateRunPlots(file_vecs[j],ntuple,dirname);
+  }
 
 
   return 0;
