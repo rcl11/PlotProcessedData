@@ -16,6 +16,7 @@ parser.add_option("-d", "--directory", dest="dirname",
 
 nice_labels = {
     'nhits' : 'Number of hits',
+    'nhitsz' : 'Number of hits vs z',
     'nhits_log' : 'Number of hits log scale',
     'posR' : 'R position',
     'posR3' : 'R cubed position',
@@ -35,6 +36,7 @@ nice_labels = {
     'itr' : 'ITR',
     'duration' : 'Run duration',
     'trigger' : 'Trigger word',
+    'dataclean' : 'Data clean',
 }
 
 maintenance_runs = ['14713','14714','14715','15091']
@@ -44,6 +46,7 @@ runs1hr = ['15060','15061','15459']
 
 #Extract known information from filename
 for filename in glob.glob(options.dirname+"/"+"*.png"):
+    print filename
     data = {}
     json_name = filename.replace(".png",".json")
     json_file = open(json_name, "w")
@@ -71,14 +74,16 @@ for filename in glob.glob(options.dirname+"/"+"*.png"):
     j = re.compile("_s([0-9]*)")
     subrun_number = j.findall(filename)[0]
 
-    q = re.compile("/(.*)_r")
+    q = re.compile("[0-9*]/(.*)_r")
     #plot type    
     plot_type = q.findall(filename)[0]
     data['run number'] = run_number+"_"+subrun_number
 
     #trigger type    
     trig_type = "Any trigger"
-    if "nhits" in plot_type:
+    if "nhitsz" in plot_type:
+        plot_type = 'nhitsz'
+    elif "nhits" in plot_type:
         if not "nhits_" in plot_type or "nhits_log" in plot_type:
             trig_type = "Any trigger"
         else:    

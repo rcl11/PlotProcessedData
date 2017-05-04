@@ -121,12 +121,17 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
     TH2D hnhitsz = plot_map["nhitsz"].Get2DHist(); 
     TH1D hduration = plot_map["duration"].GetHist(); 
     TH1D htrigger = plot_map["trigger"].GetHist(); 
+    TH1D hdataclean = plot_map["dataclean"].GetHist(); 
   
     TFile *f = new TFile(files[i].c_str());
     
     std::vector<std::string> trig_names = {"N100L","N100M","N100H","N20","N20LB","ESUML","ESUMH","OWLN","OWLEL","OWLEH","PULGT"}; 
     for(unsigned h=0;h<trig_names.size();h++){
       htrigger.GetXaxis()->SetBinLabel(h+1,trig_names[h].c_str());
+    }
+    std::vector<std::string> dataclean_names = {"prescale","zerozerocut","ftscut","flashergeocut","icttimespread","junkcut","muontag","neckcut","owlcut","qcluster","qvnhit","qvt","ringoffire","tpmuonshort"}; 
+    for(unsigned h=0;h<dataclean_names.size();h++){
+      hdataclean.GetXaxis()->SetBinLabel(h+1,dataclean_names[h].c_str());
     }
   
     int n_cleanevents=0;
@@ -184,6 +189,10 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
         bool dataclean = ( (flag & 0b111111111111110) == 0b111111111111110);
         //analysis_mask
         bool compatibility_cut = (applied_flag & 0b111111111111110) == 0b111111111111110;
+        std::bitset<32> cleanbits = std::bitset<32>(flag);
+        for(unsigned g=0; g<dataclean_names.size(); g++){
+          if(cleanbits.test(g)) hdataclean.Fill(dataclean_names[g].c_str(),1);
+        }
         if(dataclean && compatibility_cut) {
           hnhits.Fill(nhits);
           htotalQ.Fill(charge);
@@ -235,7 +244,6 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
             htotalQ_OWLEH.Fill(charge);
             htrigger.Fill("OWLEH", 1);
           }
-          //std::cout << "testing pulseGT trigger " << bits.test(10) << " " << htrigger->GetBinContent(11) << std::endl; 
           hfitValid.Fill(fit_valid); 
           if(fit_valid){
             hposrz.Fill(sqrt(posx*posx + posy*posy), posz);
@@ -273,6 +281,11 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
           if(iEntry == dsReader.GetEntryCount()-1 && iEv == rDS.GetEVCount()-1 ) end_time = rEV.GetUniversalTime();
           const RAT::DS::Meta& rMeta = dsReader.GetMeta();
           n_events++;
+          std::bitset<32> cleanbits = std::bitset<32> (rEV.GetDataCleaningFlags().GetFlags(0).GetULong64_t(0));
+          for(unsigned g=0; g<dataclean_names.size(); g++){
+            if(cleanbits.test(g)) hdataclean.Fill(dataclean_names[g].c_str(),1);
+          }
+          
           if(RAT::EventIsClean( rEV, rMeta, rDataCleaningWord )){
             n_cleanevents++;
             hnhits.Fill( rEV.GetNhits() );
@@ -324,6 +337,7 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
                 htotalQ_pulseGT.Fill( rEV.GetTotalCharge() );
                 htrigger.Fill("PULGT", 1);
             }
+            //Need to add filling of data clean plot for ratds
                   
             if(rEV.FitResultExists("waterFitter") && rEV.GetFitResult("waterFitter").GetValid()){
                 RAT::DS::FitVertex rvertex = rEV.GetFitResult("waterFitter").GetVertex(0);
@@ -386,6 +400,7 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
     plot_map["tpmt"].SetHist(htpmt);
     plot_map["duration"].SetHist(hduration);
     plot_map["trigger"].SetHist(htrigger);
+    plot_map["dataclean"].SetHist(hdataclean);
     plot_map["posxy"].Set2DHist(hposxy);
     plot_map["nhitsz"].Set2DHist(hnhitsz);
     plot_map["posrz"].Set2DHist(hposrz);
@@ -405,7 +420,7 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
         plot.GeneratePlot();
     }
     //Dont bother plotting any runs which last less than 1 minute in the comparison plots
-    if(run_duration < 60) continue;
+    //if(run_duration < 60) continue;
     //Count the files/runs which are deemed good by whatever conditions we want to set
     file_count++;
 
@@ -522,7 +537,6 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
  
 }
 
-
 int main(int argc, char** argv){
 
    po::options_description desc("Options"); 
@@ -551,19 +565,23 @@ int main(int argc, char** argv){
   //Split up the filelists into 20 runs at a time in order to make manageable webpages
   std::vector<std::vector<std::string>> file_vecs;
   std::vector<std::string> file_vec;
-  for(unsigned i=0; i<files.size(); i++){
+  int exe_on = 20; 
+  for(unsigned i=0; i<files.size(); i++) {
     file_vec.push_back(files[i]);
-    std::cout << file_vec.size() << std::endl;
-    if(i % 20 == 0 && i>0) {
+    if(((i+1) % exe_on == 0) && i>0) {
       std::vector<std::string> file_vec_temp = file_vec;
       file_vecs.push_back(file_vec_temp);
       file_vec.clear();
     }
   }
+  std::vector<std::string> file_vec_temp = file_vec;
+  file_vecs.push_back(file_vec_temp);
+  file_vec.clear();
   
   for(unsigned j=0; j<file_vecs.size(); j++){
     std::stringstream ss;
     ss << j;
+    fs::create_directory(directory.c_str());
     std::string dirname = directory+ss.str()+"/";
     fs::create_directory(dirname.c_str());
     CreateRunPlots(file_vecs[j],ntuple,dirname);
