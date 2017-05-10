@@ -116,6 +116,14 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
     TH1D hzpmt = plot_map["zpmt"].GetHist(); 
     TH1D htpmt = plot_map["tpmt"].GetHist(); 
     TH2D hposxy = plot_map["posxy"].Get2DHist(); 
+    TH2D herrposx = plot_map["errposx"].Get2DHist(); 
+    TH2D herrposy = plot_map["errposy"].Get2DHist(); 
+    TH2D herrposz = plot_map["errposz"].Get2DHist(); 
+    TH2D herrposRx = plot_map["errposRx"].Get2DHist(); 
+    TH2D herrposRy = plot_map["errposRy"].Get2DHist(); 
+    TH2D herrposRz = plot_map["errposRz"].Get2DHist(); 
+    TH2D herrposRnhits = plot_map["errposRnhits"].Get2DHist(); 
+    TH2D herrposRitr = plot_map["errposRitr"].Get2DHist(); 
     TH2D hposrz = plot_map["posrz"].Get2DHist(); 
     TH2D hposRz = plot_map["posRz"].Get2DHist(); 
     TH2D hnhitsz = plot_map["nhitsz"].Get2DHist(); 
@@ -127,7 +135,7 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
   
     TFile *f = new TFile(files[i].c_str());
     
-    std::vector<std::string> trig_names = {"N100L","N100M","N100H","N20","N20LB","ESUML","ESUMH","OWLN","OWLEL","OWLEH","PULGT"}; 
+    std::vector<std::string> trig_names = {"N100L","N100M","N100H","N20","N20LB","ESUML","ESUMH","OWLN","OWLEL","OWLEH","PULGT","Prescale","Pedestal"}; 
     for(unsigned h=0;h<trig_names.size();h++){
       htrigger.GetXaxis()->SetBinLabel(h+1,trig_names[h].c_str());
     }
@@ -250,6 +258,12 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
             htotalQ_OWLEH.Fill(charge);
             htrigger.Fill("OWLEH", 1);
           }
+          if(bits.test(11)){
+            htrigger.Fill("Prescale", 1);
+          }
+          if(bits.test(12)){
+            htrigger.Fill("Pedestal", 1);
+          }
           hfitValid.Fill(fit_valid); 
           if(fit_valid){
             hposrz.Fill(sqrt(posx*posx + posy*posy), posz);
@@ -296,6 +310,8 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
           }
           
           if(RAT::EventIsClean( rEV, rMeta, rDataCleaningWord )){
+          //Will need changing in next RAT release
+          //if(RAT::EventIsClean( rEV, rDataCleaningWord )){
             n_cleanevents++;
             hnhits.Fill( rEV.GetNhits() );
             htotalQ.Fill( rEV.GetTotalCharge() );
@@ -346,13 +362,29 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
                 htotalQ_pulseGT.Fill( rEV.GetTotalCharge() );
                 htrigger.Fill("PULGT", 1);
             }
-            //Need to add filling of data clean plot for ratds
+            if(RAT::BitManip::TestBit(rEV.GetTrigType(), RAT::DU::TrigBits::Prescale)){
+                htrigger.Fill("Prescale", 1);
+            }
+            if(RAT::BitManip::TestBit(rEV.GetTrigType(), RAT::DU::TrigBits::Pedestal)){
+                htrigger.Fill("Pedestal", 1);
+            }
                   
             if(rEV.FitResultExists("waterFitter") && rEV.GetFitResult("waterFitter").GetValid()){
                 RAT::DS::FitVertex rvertex = rEV.GetFitResult("waterFitter").GetVertex(0);
               if( rvertex.ContainsPosition() && rvertex.ValidPosition() ) {
                 hfitValid.Fill(1.);
                 double R = sqrt(rvertex.GetPosition().X()*rvertex.GetPosition().X()  + rvertex.GetPosition().Y()*rvertex.GetPosition().Y() + rvertex.GetPosition().Z()*rvertex.GetPosition().Z());
+                if(rvertex.ValidPositivePositionError()) {
+                  herrposx.Fill(rvertex.GetPosition().X(), rvertex.GetPositivePositionError().x());
+                  herrposy.Fill(rvertex.GetPosition().Y(), rvertex.GetPositivePositionError().y());
+                  herrposz.Fill(rvertex.GetPosition().Z(), rvertex.GetPositivePositionError().z());
+                  double err_R = rvertex.GetPositivePositionError().Mag();
+                  herrposRx.Fill(rvertex.GetPosition().X(), err_R);
+                  herrposRy.Fill(rvertex.GetPosition().Y(), err_R);
+                  herrposRz.Fill(rvertex.GetPosition().Z(), err_R);
+                  herrposRnhits.Fill(rEV.GetNhits(), err_R);
+                  herrposRitr.Fill(rEV.GetClassifierResult("ITR:waterFitter").GetClassification("ITR"), err_R);
+                }
                 hposx.Fill(rvertex.GetPosition().X());
                 hposy.Fill(rvertex.GetPosition().Y());
                 hposz.Fill(rvertex.GetPosition().Z());
@@ -415,6 +447,14 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
     plot_map["beta14"].SetHist(hbeta14);
     plot_map["energy"].SetHist(henergy);
     plot_map["posxy"].Set2DHist(hposxy);
+    plot_map["errposx"].Set2DHist(herrposx);
+    plot_map["errposy"].Set2DHist(herrposy);
+    plot_map["errposz"].Set2DHist(herrposz);
+    plot_map["errposRx"].Set2DHist(herrposRx);
+    plot_map["errposRy"].Set2DHist(herrposRy);
+    plot_map["errposRz"].Set2DHist(herrposRz);
+    plot_map["errposRnhits"].Set2DHist(herrposRnhits);
+    plot_map["errposRitr"].Set2DHist(herrposRitr);
     plot_map["nhitsz"].Set2DHist(hnhitsz);
     plot_map["posrz"].Set2DHist(hposrz);
     plot_map["posRz"].Set2DHist(hposRz);
