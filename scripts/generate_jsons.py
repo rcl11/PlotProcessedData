@@ -37,6 +37,8 @@ nice_labels = {
     'duration' : 'Run duration',
     'trigger' : 'Trigger word',
     'dataclean' : 'Data clean',
+    'beta14': 'beta14',
+    'energy': 'energy',
 }
 
 maintenance_runs = ['14713','14714','14715','15091']

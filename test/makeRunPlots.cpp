@@ -122,6 +122,8 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
     TH1D hduration = plot_map["duration"].GetHist(); 
     TH1D htrigger = plot_map["trigger"].GetHist(); 
     TH1D hdataclean = plot_map["dataclean"].GetHist(); 
+    TH1D hbeta14 = plot_map["beta14"].GetHist(); 
+    TH1D henergy = plot_map["energy"].GetHist(); 
   
     TFile *f = new TFile(files[i].c_str());
     
@@ -149,6 +151,8 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
       bool fit_valid;
       Double_t itr;
       Int_t triggerWord;
+      Double_t beta14;
+      Double_t energy;
       Int_t uTDays, uTSecs, uTNSecs; 
       t1->SetBranchAddress("nhits",&nhits);
       t1->SetBranchAddress("q",&charge);
@@ -163,6 +167,8 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
       t1->SetBranchAddress("uTDays",&uTDays);
       t1->SetBranchAddress("uTSecs",&uTSecs);
       t1->SetBranchAddress("uTNSecs",&uTNSecs);
+      t1->SetBranchAddress("beta14",&beta14);
+      t1->SetBranchAddress("energy",&energy);
 
 
       Long64_t nentries = t1->GetEntries();
@@ -252,6 +258,8 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
             hposz.Fill(posz);
             hposxy.Fill(posx,posy);
             hnhitsz.Fill(nhits,posz);
+            hbeta14.Fill(beta14);
+            henergy.Fill(energy);
             double R = sqrt(posx*posx + posy*posy + posz*posz);
             hposR.Fill(R);
             hposR3.Fill(pow(R,3)/pow(6005.3,3));
@@ -281,6 +289,7 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
           if(iEntry == dsReader.GetEntryCount()-1 && iEv == rDS.GetEVCount()-1 ) end_time = rEV.GetUniversalTime();
           const RAT::DS::Meta& rMeta = dsReader.GetMeta();
           n_events++;
+          //Below line may need changing with new PR fixing which pass this works for
           std::bitset<32> cleanbits = std::bitset<32> (rEV.GetDataCleaningFlags().GetFlags(0).GetULong64_t(0));
           for(unsigned g=0; g<dataclean_names.size(); g++){
             if(cleanbits.test(g)) hdataclean.Fill(dataclean_names[g].c_str(),1);
@@ -354,6 +363,8 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
                 hposR.Fill(R );
                 hposR3.Fill(pow(R,3)/pow(6005.3,3));
                 hitr.Fill(rEV.GetClassifierResult("ITR:waterFitter").GetClassification("ITR"));
+                if(rvertex.ValidEnergy() && rvertex.ContainsEnergy()) henergy.Fill(rvertex.GetEnergy());
+                if(rEV.GetClassifierResult( "isotropy:waterFitter" ).GetValid()) hbeta14.Fill(rEV.GetClassifierResult("isotropy:waterFitter").GetClassification("snobeta14"));
               } else hfitValid.Fill(0.);
             } else hfitValid.Fill(0.);
             RAT::DS::CalPMTs& calpmts = rEV.GetCalPMTs();
@@ -401,6 +412,8 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
     plot_map["duration"].SetHist(hduration);
     plot_map["trigger"].SetHist(htrigger);
     plot_map["dataclean"].SetHist(hdataclean);
+    plot_map["beta14"].SetHist(hbeta14);
+    plot_map["energy"].SetHist(henergy);
     plot_map["posxy"].Set2DHist(hposxy);
     plot_map["nhitsz"].Set2DHist(hnhitsz);
     plot_map["posrz"].Set2DHist(hposrz);
