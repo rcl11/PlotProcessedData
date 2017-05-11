@@ -72,7 +72,9 @@ std::map<std::string,THPlot::THPlot> ParseConfigs(std::string config_dir="config
 void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, std::string output_dir="plots/" )
 {
     
+  SetStyle();
   TH1D* hnhits_vs_run = new TH1D( "hnhits_vs_run", "Mean number of hits per run", files.size(), 0.0, files.size() );
+  TH1D* hnhits_vs_time = new TH1D( "hnhits_vs_time", "Number of hits per 1 minute", 12000, 64400, 64600 );
   TH1D* htotalQ_vs_run = new TH1D( "htotalQ_vs_run", "Mean total charge per run", files.size(), 0.0, files.size() );
   TH1D* hNEvents_vs_run = new TH1D( "hNEvents_vs_run", "Number of events per run", files.size(), 0.0, files.size() );
   TH1D* hNCleanEvents_vs_run = new TH1D( "hNCleanEvents_vs_run", "Number of clean events per run", files.size(), 0.0, files.size() );
@@ -80,6 +82,8 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
   TH1D* hFracCleanEvents_vs_run = new TH1D( "hFracCleanEvents_vs_run", "Fraction of clean events per run", files.size(), 0.0, files.size() );
   std::string start_run = "";
   std::string end_run = "";
+  double start_run_time=0;
+  double end_run_time=0;
   std::string postfix = "";
   if(ntuple) postfix = "_ntuple";
   double run_duration = 0;
@@ -119,11 +123,12 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
     TH2D herrposx = plot_map["errposx"].Get2DHist(); 
     TH2D herrposy = plot_map["errposy"].Get2DHist(); 
     TH2D herrposz = plot_map["errposz"].Get2DHist(); 
-    TH2D herrposRx = plot_map["errposRx"].Get2DHist(); 
-    TH2D herrposRy = plot_map["errposRy"].Get2DHist(); 
-    TH2D herrposRz = plot_map["errposRz"].Get2DHist(); 
-    TH2D herrposRnhits = plot_map["errposRnhits"].Get2DHist(); 
-    TH2D herrposRitr = plot_map["errposRitr"].Get2DHist(); 
+    TH2D herrposxnhits = plot_map["errposxnhits"].Get2DHist(); 
+    TH2D herrposxitr = plot_map["errposxitr"].Get2DHist(); 
+    TH2D herrposynhits = plot_map["errposynhits"].Get2DHist(); 
+    TH2D herrposyitr = plot_map["errposyitr"].Get2DHist(); 
+    TH2D herrposznhits = plot_map["errposznhits"].Get2DHist(); 
+    TH2D herrposzitr = plot_map["errposzitr"].Get2DHist(); 
     TH2D hposrz = plot_map["posrz"].Get2DHist(); 
     TH2D hposRz = plot_map["posRz"].Get2DHist(); 
     TH2D hnhitsz = plot_map["nhitsz"].Get2DHist(); 
@@ -199,6 +204,10 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
           end_secs = uTSecs;
           end_nsecs = uTNSecs;
         }
+        
+        double event_time_secs = (uTDays)*60*60*24 + (uTSecs) + ((uTNSecs) * 1E-9);
+        if(j==0 && i==0) start_run_time = event_time_secs;
+        if(j==nentries-1 && i==files.size()-1) end_run_time = event_time_secs;
         //analysis_mask
         bool dataclean = ( (flag & 0b111111111111110) == 0b111111111111110);
         //analysis_mask
@@ -209,6 +218,7 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
         }
         if(dataclean && compatibility_cut) {
           hnhits.Fill(nhits);
+          hnhits_vs_time->Fill(event_time_secs/(60*60),nhits);
           htotalQ.Fill(charge);
           //Fill some nhits and total q plots for different triggers fired
           std::bitset<32> bits = std::bitset<32>(triggerWord);
@@ -301,6 +311,9 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
           RAT::DS::EV rEV = rDS.GetEV(iEv);
           if(iEntry == 0 && iEv == 0 ) start_time = rEV.GetUniversalTime();
           if(iEntry == dsReader.GetEntryCount()-1 && iEv == rDS.GetEVCount()-1 ) end_time = rEV.GetUniversalTime();
+          double event_time_secs = ((rEV.GetUniversalTime()).GetDays())*60*60*24 + ((rEV.GetUniversalTime()).GetSeconds()) + ((rEV.GetUniversalTime()).GetNanoSeconds() * 1E-9);
+          if(iEntry == 0 && iEv == 0 && i == 0) start_run_time = event_time_secs;
+          if(iEntry == dsReader.GetEntryCount()-1 && iEv == rDS.GetEVCount()-1 && i == files.size()-1) end_run_time = event_time_secs;
           const RAT::DS::Meta& rMeta = dsReader.GetMeta();
           n_events++;
           //Below line may need changing with new PR fixing which pass this works for
@@ -311,9 +324,10 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
           
           if(RAT::EventIsClean( rEV, rMeta, rDataCleaningWord )){
           //Will need changing in next RAT release
-          //if(RAT::EventIsClean( rEV, rDataCleaningWord )){
+          //if(RAT::EventIsClean( rEV, rDataCleaningWord ))
             n_cleanevents++;
             hnhits.Fill( rEV.GetNhits() );
+            hnhits_vs_time->Fill(event_time_secs/(60*60),rEV.GetNhits());
             htotalQ.Fill( rEV.GetTotalCharge() );
             //Fill some nhits and total q plots for different triggers fired
             //std::cout << std::bitset<32>(rEV.GetTrigType())/*.to_string()*/ << std::endl;
@@ -378,12 +392,12 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
                   herrposx.Fill(rvertex.GetPosition().X(), rvertex.GetPositivePositionError().x());
                   herrposy.Fill(rvertex.GetPosition().Y(), rvertex.GetPositivePositionError().y());
                   herrposz.Fill(rvertex.GetPosition().Z(), rvertex.GetPositivePositionError().z());
-                  double err_R = rvertex.GetPositivePositionError().Mag();
-                  herrposRx.Fill(rvertex.GetPosition().X(), err_R);
-                  herrposRy.Fill(rvertex.GetPosition().Y(), err_R);
-                  herrposRz.Fill(rvertex.GetPosition().Z(), err_R);
-                  herrposRnhits.Fill(rEV.GetNhits(), err_R);
-                  herrposRitr.Fill(rEV.GetClassifierResult("ITR:waterFitter").GetClassification("ITR"), err_R);
+                  herrposxnhits.Fill(rEV.GetNhits(), rvertex.GetPositivePositionError().x());
+                  herrposxitr.Fill(rEV.GetClassifierResult("ITR:waterFitter").GetClassification("ITR"), rvertex.GetPositivePositionError().x());
+                  herrposynhits.Fill(rEV.GetNhits(), rvertex.GetPositivePositionError().y());
+                  herrposyitr.Fill(rEV.GetClassifierResult("ITR:waterFitter").GetClassification("ITR"), rvertex.GetPositivePositionError().y());
+                  herrposznhits.Fill(rEV.GetNhits(), rvertex.GetPositivePositionError().z());
+                  herrposzitr.Fill(rEV.GetClassifierResult("ITR:waterFitter").GetClassification("ITR"), rvertex.GetPositivePositionError().z());
                 }
                 hposx.Fill(rvertex.GetPosition().X());
                 hposy.Fill(rvertex.GetPosition().Y());
@@ -450,11 +464,12 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
     plot_map["errposx"].Set2DHist(herrposx);
     plot_map["errposy"].Set2DHist(herrposy);
     plot_map["errposz"].Set2DHist(herrposz);
-    plot_map["errposRx"].Set2DHist(herrposRx);
-    plot_map["errposRy"].Set2DHist(herrposRy);
-    plot_map["errposRz"].Set2DHist(herrposRz);
-    plot_map["errposRnhits"].Set2DHist(herrposRnhits);
-    plot_map["errposRitr"].Set2DHist(herrposRitr);
+    plot_map["errposxnhits"].Set2DHist(herrposxnhits);
+    plot_map["errposxitr"].Set2DHist(herrposxitr);
+    plot_map["errposynhits"].Set2DHist(herrposynhits);
+    plot_map["errposyitr"].Set2DHist(herrposyitr);
+    plot_map["errposznhits"].Set2DHist(herrposznhits);
+    plot_map["errposzitr"].Set2DHist(herrposzitr);
     plot_map["nhitsz"].Set2DHist(hnhitsz);
     plot_map["posrz"].Set2DHist(hposrz);
     plot_map["posRz"].Set2DHist(hposRz);
@@ -499,7 +514,7 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
     hFracCleanEvents_vs_run->Fill(file_count-1, float(n_cleanevents)/float(n_events));
     hFracCleanEvents_vs_run->SetBinError(file_count,sqrt( pow((sqrt(n_cleanevents)/n_cleanevents),2) + pow((sqrt(n_events)/n_events),2)));
     hFracCleanEvents_vs_run->GetXaxis()->SetBinLabel(file_count,bin_label.c_str());
-    delete f;
+    //delete f;
   }
   
 
@@ -510,22 +525,32 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
   hnhits_vs_run->SetLineColor(TColor::GetColor(220, 24, 24));
   hnhits_vs_run->GetYaxis()->SetTitle( "Mean #Hits" );
   hnhits_vs_run->GetXaxis()->SetTitle( "Run ID" );
-  hnhits_vs_run->GetXaxis()->SetTitleOffset(1.9);
   //Necessary rescale of axis to get rid of empty bins where we didnt fill because the run wasn't good
   hnhits_vs_run->GetXaxis()->SetRangeUser(0,file_count);
   hnhits_vs_run->Draw("PE1");
-  c100->SetLeftMargin(0.1);
-  c100->SetBottomMargin(0.18);
+  c100->SetLeftMargin(0.12);
+  c100->SetBottomMargin(0.20);
   c100->Update();
   c100->SaveAs((output_dir+"nhits_vs_run_"+start_run+"_to_"+end_run+postfix+".png").c_str());
   c100->SaveAs((output_dir+"nhits_vs_run_"+start_run+"_to_"+end_run+postfix+".pdf").c_str());
   
-  htotalQ_vs_run->SetMarkerColor(TColor::GetColor(142, 24, 220));
+  hnhits_vs_time->SetMarkerColor(TColor::GetColor(142, 24, 220));
+  hnhits_vs_time->SetMarkerStyle(20);
+  hnhits_vs_time->SetLineColor(TColor::GetColor(142, 24, 220));
+  hnhits_vs_time->GetYaxis()->SetTitle( "Nhits/1 minute" );
+  hnhits_vs_time->GetXaxis()->SetTitle( "Time (hours)" );
+  hnhits_vs_time->GetXaxis()->SetRangeUser(start_run_time/(60*60),end_run_time/(60*60));
+  hnhits_vs_time->GetYaxis()->SetTitleOffset(0.8);
+  hnhits_vs_time->Draw("PE1");
+  c100->Update();
+  c100->SaveAs((output_dir+"nhits_vs_time_"+start_run+"_to_"+end_run+postfix+".png").c_str());
+  c100->SaveAs((output_dir+"nhits_vs_time_"+start_run+"_to_"+end_run+postfix+".pdf").c_str());
+  
+  htotalQ_vs_run->SetMarkerColor(TColor::GetColor(220, 24, 24));
   htotalQ_vs_run->SetMarkerStyle(20);
-  htotalQ_vs_run->SetLineColor(TColor::GetColor(142, 24, 220));
+  htotalQ_vs_run->SetLineColor(TColor::GetColor(220, 24, 24));
   htotalQ_vs_run->GetYaxis()->SetTitle( "Mean totalQ" );
   htotalQ_vs_run->GetXaxis()->SetTitle( "Run ID" );
-  htotalQ_vs_run->GetXaxis()->SetTitleOffset(1.9);
   htotalQ_vs_run->GetXaxis()->SetRangeUser(0,file_count);
   htotalQ_vs_run->Draw("PE1");
   c100->Update();
@@ -537,7 +562,6 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
   hNCleanEvents_vs_run->SetLineColor(kGreen);
   hNCleanEvents_vs_run->GetYaxis()->SetTitle( "# Clean Events" );
   hNCleanEvents_vs_run->GetXaxis()->SetTitle( "Run ID" );
-  hNCleanEvents_vs_run->GetXaxis()->SetTitleOffset(1.9);
   hNCleanEvents_vs_run->GetXaxis()->SetRangeUser(0,file_count);
   hNCleanEvents_vs_run->Draw("PE1");
   c100->Update();
@@ -549,7 +573,6 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
   hNEvents_vs_run->SetLineColor(kGreen);
   hNEvents_vs_run->GetYaxis()->SetTitle( "# Events" );
   hNEvents_vs_run->GetXaxis()->SetTitle( "Run ID" );
-  hNEvents_vs_run->GetXaxis()->SetTitleOffset(1.9);
   hNEvents_vs_run->GetXaxis()->SetRangeUser(0,file_count);
   hNEvents_vs_run->Draw("PE1");
   c100->Update();
@@ -573,7 +596,6 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
   hFracCleanEvents_vs_run->SetLineColor(kMagenta);
   hFracCleanEvents_vs_run->GetYaxis()->SetTitle( "Fraction of clean Events" );
   hFracCleanEvents_vs_run->GetXaxis()->SetTitle( "Run ID" );
-  hFracCleanEvents_vs_run->GetXaxis()->SetTitleOffset(1.9);
   hFracCleanEvents_vs_run->GetXaxis()->SetRangeUser(0,file_count);
   hFracCleanEvents_vs_run->Draw("PE1");
   c100->Update();
@@ -582,6 +604,7 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
   
   delete c100;
   delete hnhits_vs_run;
+  delete hnhits_vs_time;
   delete htotalQ_vs_run;
   delete hNEvents_vs_run;
   delete hNCleanEvents_vs_run;
