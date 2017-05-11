@@ -39,6 +39,15 @@ nice_labels = {
     'dataclean' : 'Data clean',
     'beta14': 'beta14',
     'energy': 'energy',
+    'errposx': 'x err vs x',
+    'errposy': 'y err vs y',
+    'errposz': 'z err vs z',
+    'errposxnhits': 'x err vs nhits',
+    'errposxitr': 'x err vs ITR',
+    'errposynhits': 'y err vs nhits',
+    'errposyitr': 'y err vs ITR',
+    'errposznhits': 'z err vs nhits',
+    'errposzitr': 'z err vs ITR',
 }
 
 maintenance_runs = ['14713','14714','14715','15091']
@@ -85,6 +94,8 @@ for filename in glob.glob(options.dirname+"/"+"*.png"):
     trig_type = "Any trigger"
     if "nhitsz" in plot_type:
         plot_type = 'nhitsz'
+    elif "errposRnhits" in plot_type:
+        plot_type = 'errposRnhits'
     elif "nhits" in plot_type:
         if not "nhits_" in plot_type or "nhits_log" in plot_type:
             trig_type = "Any trigger"

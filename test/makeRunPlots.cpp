@@ -74,12 +74,27 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
     
   SetStyle();
   TH1D* hnhits_vs_run = new TH1D( "hnhits_vs_run", "Mean number of hits per run", files.size(), 0.0, files.size() );
-  TH1D* hnhits_vs_time = new TH1D( "hnhits_vs_time", "Number of hits per 1 minute", 12000, 64400, 64600 );
+  hnhits_vs_run->Sumw2();
+  TH1D* hnhits_vs_time = new TH1D( "hnhits_vs_time", "Number of hits per 5 minutes", 2400, 64400, 64600 );
+  hnhits_vs_time->Sumw2();
   TH1D* htotalQ_vs_run = new TH1D( "htotalQ_vs_run", "Mean total charge per run", files.size(), 0.0, files.size() );
+  htotalQ_vs_run->Sumw2();
+  TH1D* htotalQ_vs_time = new TH1D( "htotalQ_vs_time", "Total charge per 5 minutes", 2400, 64400, 64600 );
+  htotalQ_vs_time->Sumw2();
   TH1D* hNEvents_vs_run = new TH1D( "hNEvents_vs_run", "Number of events per run", files.size(), 0.0, files.size() );
+  hNEvents_vs_run->Sumw2();
+  TH1D* hNEvents_vs_time = new TH1D( "hNEvents_vs_rtime", "Number of events per 5 minutes",2400,64400,64600 );
+  hNEvents_vs_time->Sumw2();
   TH1D* hNCleanEvents_vs_run = new TH1D( "hNCleanEvents_vs_run", "Number of clean events per run", files.size(), 0.0, files.size() );
+  hNCleanEvents_vs_run->Sumw2();
+  TH1D* hNCleanEvents_vs_time = new TH1D( "hNCleanEvents_vs_time", "Number of clean events per 5 minutes",2400,64400,64600   );
+  hNCleanEvents_vs_time->Sumw2();
   TH1D* hNCleanEventsnorm_vs_run = new TH1D( "hNCleanEventsnorm_vs_run", "Normalised number of clean events per run", files.size(), 0.0, files.size() );
+  hNCleanEventsnorm_vs_run->Sumw2();
   TH1D* hFracCleanEvents_vs_run = new TH1D( "hFracCleanEvents_vs_run", "Fraction of clean events per run", files.size(), 0.0, files.size() );
+  hFracCleanEvents_vs_run->Sumw2();
+  TH1D* hFracCleanEvents_vs_time = new TH1D( "hFracCleanEvents_vs_time", "Fraction of clean events per 5 minutes",2400,64400,64600  );
+  hFracCleanEvents_vs_time->Sumw2();
   std::string start_run = "";
   std::string end_run = "";
   double start_run_time=0;
@@ -114,11 +129,6 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
     TH1D hposz = plot_map["posz"].GetHist(); 
     TH1D hposR = plot_map["posR"].GetHist(); 
     TH1D hposR3 = plot_map["posR3"].GetHist(); 
-    TH1D hrpmt = plot_map["rpmt"].GetHist(); 
-    TH1D hxpmt = plot_map["xpmt"].GetHist(); 
-    TH1D hypmt = plot_map["ypmt"].GetHist(); 
-    TH1D hzpmt = plot_map["zpmt"].GetHist(); 
-    TH1D htpmt = plot_map["tpmt"].GetHist(); 
     TH2D hposxy = plot_map["posxy"].Get2DHist(); 
     TH2D herrposx = plot_map["errposx"].Get2DHist(); 
     TH2D herrposy = plot_map["errposy"].Get2DHist(); 
@@ -129,8 +139,13 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
     TH2D herrposyitr = plot_map["errposyitr"].Get2DHist(); 
     TH2D herrposznhits = plot_map["errposznhits"].Get2DHist(); 
     TH2D herrposzitr = plot_map["errposzitr"].Get2DHist(); 
-    TH2D hposrz = plot_map["posrz"].Get2DHist(); 
+    TH2D hposrhoz = plot_map["posrhoz"].Get2DHist(); 
     TH2D hposRz = plot_map["posRz"].Get2DHist(); 
+    TH1D hrpmt = plot_map["rpmt"].GetHist(); 
+    TH1D hxpmt = plot_map["xpmt"].GetHist(); 
+    TH1D hypmt = plot_map["ypmt"].GetHist(); 
+    TH1D hzpmt = plot_map["zpmt"].GetHist(); 
+    TH1D htpmt = plot_map["tpmt"].GetHist(); 
     TH2D hnhitsz = plot_map["nhitsz"].Get2DHist(); 
     TH1D hduration = plot_map["duration"].GetHist(); 
     TH1D htrigger = plot_map["trigger"].GetHist(); 
@@ -216,10 +231,13 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
         for(unsigned g=0; g<dataclean_names.size(); g++){
           if(cleanbits.test(g)) hdataclean.Fill(dataclean_names[g].c_str(),1);
         }
+        hNEvents_vs_time->Fill(event_time_secs/(60*60),1);
         if(dataclean && compatibility_cut) {
+          hNCleanEvents_vs_time->Fill(event_time_secs/(60*60),1);
           hnhits.Fill(nhits);
           hnhits_vs_time->Fill(event_time_secs/(60*60),nhits);
           htotalQ.Fill(charge);
+          htotalQ_vs_time->Fill(event_time_secs/(60*60),charge);
           //Fill some nhits and total q plots for different triggers fired
           std::bitset<32> bits = std::bitset<32>(triggerWord);
           //Numbers to test taken from RAT documentation
@@ -276,7 +294,7 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
           }
           hfitValid.Fill(fit_valid); 
           if(fit_valid){
-            hposrz.Fill(sqrt(posx*posx + posy*posy), posz);
+            hposrhoz.Fill(sqrt(posx*posx + posy*posy), posz);
             hposx.Fill(posx);
             hposy.Fill(posy);
             hposz.Fill(posz);
@@ -322,13 +340,16 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
             if(cleanbits.test(g)) hdataclean.Fill(dataclean_names[g].c_str(),1);
           }
           
+          hNEvents_vs_time->Fill(event_time_secs/(60*60),1);
           if(RAT::EventIsClean( rEV, rMeta, rDataCleaningWord )){
           //Will need changing in next RAT release
           //if(RAT::EventIsClean( rEV, rDataCleaningWord ))
             n_cleanevents++;
             hnhits.Fill( rEV.GetNhits() );
+            hNCleanEvents_vs_time->Fill(event_time_secs/(60*60),1);
             hnhits_vs_time->Fill(event_time_secs/(60*60),rEV.GetNhits());
             htotalQ.Fill( rEV.GetTotalCharge() );
+            htotalQ_vs_time->Fill(event_time_secs/(60*60),rEV.GetTotalCharge());
             //Fill some nhits and total q plots for different triggers fired
             //std::cout << std::bitset<32>(rEV.GetTrigType())/*.to_string()*/ << std::endl;
             if(RAT::BitManip::TestBit(rEV.GetTrigType(), RAT::DU::TrigBits::N100Low)){
@@ -405,7 +426,7 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
                 hposxy.Fill(rvertex.GetPosition().X(),rvertex.GetPosition().Y());
                 hnhitsz.Fill(rEV.GetNhits(),rvertex.GetPosition().Z());
                 hposRz.Fill(R,rvertex.GetPosition().Z());
-                hposrz.Fill(sqrt(rvertex.GetPosition().X()*rvertex.GetPosition().X() + rvertex.GetPosition().Y()*rvertex.GetPosition().Y()),rvertex.GetPosition().Z());
+                hposrhoz.Fill(sqrt(rvertex.GetPosition().X()*rvertex.GetPosition().X() + rvertex.GetPosition().Y()*rvertex.GetPosition().Y()),rvertex.GetPosition().Z());
                 hposR.Fill(R );
                 hposR3.Fill(pow(R,3)/pow(6005.3,3));
                 hitr.Fill(rEV.GetClassifierResult("ITR:waterFitter").GetClassification("ITR"));
@@ -471,7 +492,7 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
     plot_map["errposznhits"].Set2DHist(herrposznhits);
     plot_map["errposzitr"].Set2DHist(herrposzitr);
     plot_map["nhitsz"].Set2DHist(hnhitsz);
-    plot_map["posrz"].Set2DHist(hposrz);
+    plot_map["posrhoz"].Set2DHist(hposrhoz);
     plot_map["posRz"].Set2DHist(hposRz);
   
     //=============================================================================
@@ -527,17 +548,19 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
   hnhits_vs_run->GetXaxis()->SetTitle( "Run ID" );
   //Necessary rescale of axis to get rid of empty bins where we didnt fill because the run wasn't good
   hnhits_vs_run->GetXaxis()->SetRangeUser(0,file_count);
+  hnhits_vs_run->GetYaxis()->SetTitleOffset(0.8);
   hnhits_vs_run->Draw("PE1");
+  hnhits_vs_run->SetMinimum(0);
   c100->SetLeftMargin(0.12);
   c100->SetBottomMargin(0.20);
   c100->Update();
   c100->SaveAs((output_dir+"nhits_vs_run_"+start_run+"_to_"+end_run+postfix+".png").c_str());
   c100->SaveAs((output_dir+"nhits_vs_run_"+start_run+"_to_"+end_run+postfix+".pdf").c_str());
   
-  hnhits_vs_time->SetMarkerColor(TColor::GetColor(142, 24, 220));
+  hnhits_vs_time->SetMarkerColor(TColor::GetColor(220, 24, 24));
   hnhits_vs_time->SetMarkerStyle(20);
-  hnhits_vs_time->SetLineColor(TColor::GetColor(142, 24, 220));
-  hnhits_vs_time->GetYaxis()->SetTitle( "Nhits/1 minute" );
+  hnhits_vs_time->SetLineColor(TColor::GetColor(220, 24, 24));
+  hnhits_vs_time->GetYaxis()->SetTitle( "Nhits/5 minutes" );
   hnhits_vs_time->GetXaxis()->SetTitle( "Time (hours)" );
   hnhits_vs_time->GetXaxis()->SetRangeUser(start_run_time/(60*60),end_run_time/(60*60));
   hnhits_vs_time->GetYaxis()->SetTitleOffset(0.8);
@@ -546,16 +569,30 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
   c100->SaveAs((output_dir+"nhits_vs_time_"+start_run+"_to_"+end_run+postfix+".png").c_str());
   c100->SaveAs((output_dir+"nhits_vs_time_"+start_run+"_to_"+end_run+postfix+".pdf").c_str());
   
-  htotalQ_vs_run->SetMarkerColor(TColor::GetColor(220, 24, 24));
+  htotalQ_vs_run->SetMarkerColor(TColor::GetColor(142, 24, 220));
   htotalQ_vs_run->SetMarkerStyle(20);
-  htotalQ_vs_run->SetLineColor(TColor::GetColor(220, 24, 24));
+  htotalQ_vs_run->SetLineColor(TColor::GetColor(142, 24, 220));
   htotalQ_vs_run->GetYaxis()->SetTitle( "Mean totalQ" );
   htotalQ_vs_run->GetXaxis()->SetTitle( "Run ID" );
   htotalQ_vs_run->GetXaxis()->SetRangeUser(0,file_count);
+  htotalQ_vs_run->GetYaxis()->SetTitleOffset(0.8);
+  htotalQ_vs_run->SetMinimum(0);
   htotalQ_vs_run->Draw("PE1");
   c100->Update();
   c100->SaveAs((output_dir+"totalQ_vs_run_"+start_run+"_to_"+end_run+postfix+".png").c_str());
   c100->SaveAs((output_dir+"totalQ_vs_run_"+start_run+"_to_"+end_run+postfix+".pdf").c_str());
+  
+  htotalQ_vs_time->SetMarkerColor(TColor::GetColor(142, 24, 220));
+  htotalQ_vs_time->SetMarkerStyle(20);
+  htotalQ_vs_time->SetLineColor(TColor::GetColor(142, 24, 220));
+  htotalQ_vs_time->GetYaxis()->SetTitle( "Total charge/5 minutes" );
+  htotalQ_vs_time->GetXaxis()->SetTitle( "Time (hours)" );
+  htotalQ_vs_time->GetXaxis()->SetRangeUser(start_run_time/(60*60),end_run_time/(60*60));
+  htotalQ_vs_time->GetYaxis()->SetTitleOffset(0.8);
+  htotalQ_vs_time->Draw("PE1");
+  c100->Update();
+  c100->SaveAs((output_dir+"totalQ_vs_time_"+start_run+"_to_"+end_run+postfix+".png").c_str());
+  c100->SaveAs((output_dir+"totalQ_vs_time_"+start_run+"_to_"+end_run+postfix+".pdf").c_str());
   
   hNCleanEvents_vs_run->SetMarkerColor(kGreen);
   hNCleanEvents_vs_run->SetMarkerStyle(20);
@@ -563,6 +600,8 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
   hNCleanEvents_vs_run->GetYaxis()->SetTitle( "# Clean Events" );
   hNCleanEvents_vs_run->GetXaxis()->SetTitle( "Run ID" );
   hNCleanEvents_vs_run->GetXaxis()->SetRangeUser(0,file_count);
+  hNCleanEvents_vs_run->SetMinimum(0);
+  hNCleanEvents_vs_run->GetYaxis()->SetTitleOffset(0.8);
   hNCleanEvents_vs_run->Draw("PE1");
   c100->Update();
   c100->SaveAs((output_dir+"ncleanevents_vs_run_"+start_run+"_to_"+end_run+postfix+".png").c_str());
@@ -574,18 +613,45 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
   hNEvents_vs_run->GetYaxis()->SetTitle( "# Events" );
   hNEvents_vs_run->GetXaxis()->SetTitle( "Run ID" );
   hNEvents_vs_run->GetXaxis()->SetRangeUser(0,file_count);
+  hNEvents_vs_run->GetYaxis()->SetTitleOffset(0.8);
+  hNEvents_vs_run->SetMinimum(0);
   hNEvents_vs_run->Draw("PE1");
   c100->Update();
   c100->SaveAs((output_dir+"nevents_vs_run_"+start_run+"_to_"+end_run+postfix+".png").c_str());
   c100->SaveAs((output_dir+"nevents_vs_run_"+start_run+"_to_"+end_run+postfix+".pdf").c_str());
+  
+  hNCleanEvents_vs_time->SetMarkerColor(kGreen+3);
+  hNCleanEvents_vs_time->SetMarkerStyle(20);
+  hNCleanEvents_vs_time->SetLineColor(kGreen+3);
+  hNCleanEvents_vs_time->GetYaxis()->SetTitle( "# Clean Events/5 minutes" );
+  hNCleanEvents_vs_time->GetXaxis()->SetTitle( "Time (hours)" );
+  hNCleanEvents_vs_time->GetXaxis()->SetRangeUser(start_run_time/(60*60),end_run_time/(60*60));
+  hNCleanEvents_vs_time->GetYaxis()->SetTitleOffset(0.8);
+  hNCleanEvents_vs_time->Draw("PE1");
+  c100->Update();
+  c100->SaveAs((output_dir+"ncleanevents_vs_time_"+start_run+"_to_"+end_run+postfix+".png").c_str());
+  c100->SaveAs((output_dir+"ncleanevents_vs_time_"+start_run+"_to_"+end_run+postfix+".pdf").c_str());
+  
+  hNEvents_vs_time->SetMarkerColor(kGreen);
+  hNEvents_vs_time->SetMarkerStyle(20);
+  hNEvents_vs_time->SetLineColor(kGreen);
+  hNEvents_vs_time->GetYaxis()->SetTitle( "# Events/5 minutes" );
+  hNEvents_vs_time->GetXaxis()->SetTitle( "Time (hours)" );
+  hNEvents_vs_time->GetXaxis()->SetRangeUser(start_run_time/(60*60),end_run_time/(60*60));
+  hNEvents_vs_time->GetYaxis()->SetTitleOffset(0.8);
+  hNEvents_vs_time->Draw("PE1");
+  c100->Update();
+  c100->SaveAs((output_dir+"nevents_vs_time_"+start_run+"_to_"+end_run+postfix+".png").c_str());
+  c100->SaveAs((output_dir+"nevents_vs_time_"+start_run+"_to_"+end_run+postfix+".pdf").c_str());
   
   hNCleanEventsnorm_vs_run->SetMarkerColor(kGreen+3);
   hNCleanEventsnorm_vs_run->SetMarkerStyle(20);
   hNCleanEventsnorm_vs_run->SetLineColor(kGreen+3);
   hNCleanEventsnorm_vs_run->GetYaxis()->SetTitle( "# Clean events per second" );
   hNCleanEventsnorm_vs_run->GetXaxis()->SetTitle( "Run ID" );
-  hNCleanEventsnorm_vs_run->GetXaxis()->SetTitleOffset(1.9);
+  hNCleanEventsnorm_vs_run->GetYaxis()->SetTitleOffset(0.8);
   hNCleanEventsnorm_vs_run->GetXaxis()->SetRangeUser(0,file_count);
+  hNCleanEventsnorm_vs_run->SetMinimum(0);
   hNCleanEventsnorm_vs_run->Draw("PE1");
   c100->Update();
   c100->SaveAs((output_dir+"ncleaneventsnorm_vs_run_"+start_run+"_to_"+end_run+postfix+".png").c_str());
@@ -597,18 +663,38 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
   hFracCleanEvents_vs_run->GetYaxis()->SetTitle( "Fraction of clean Events" );
   hFracCleanEvents_vs_run->GetXaxis()->SetTitle( "Run ID" );
   hFracCleanEvents_vs_run->GetXaxis()->SetRangeUser(0,file_count);
+  hFracCleanEvents_vs_run->GetYaxis()->SetTitleOffset(0.8);
+  hFracCleanEvents_vs_run->SetMinimum(0);
   hFracCleanEvents_vs_run->Draw("PE1");
   c100->Update();
   c100->SaveAs((output_dir+"fraccleanevents_vs_run_"+start_run+"_to_"+end_run+postfix+".png").c_str());
   c100->SaveAs((output_dir+"fraccleanevents_vs_run_"+start_run+"_to_"+end_run+postfix+".pdf").c_str());
   
+  hFracCleanEvents_vs_time = (TH1D*)hNCleanEvents_vs_time->Clone("hFracCleanEvents_vs_time");
+  hFracCleanEvents_vs_time->Divide(hNEvents_vs_time);
+  hFracCleanEvents_vs_time->SetMarkerColor(kMagenta);
+  hFracCleanEvents_vs_time->SetMarkerStyle(20);
+  hFracCleanEvents_vs_time->SetLineColor(kMagenta);
+  hFracCleanEvents_vs_time->GetYaxis()->SetTitle( "Fraction of clean Events/5 minutes" );
+  hFracCleanEvents_vs_time->GetXaxis()->SetTitle( "Time (hours)" );
+  hFracCleanEvents_vs_time->GetXaxis()->SetRangeUser(start_run_time/(60*60),end_run_time/(60*60));
+  hFracCleanEvents_vs_time->GetYaxis()->SetTitleOffset(0.8);
+  hFracCleanEvents_vs_time->Draw("PE1");
+  c100->Update();
+  c100->SaveAs((output_dir+"fraccleanevents_vs_time_"+start_run+"_to_"+end_run+postfix+".png").c_str());
+  c100->SaveAs((output_dir+"fraccleanevents_vs_time_"+start_run+"_to_"+end_run+postfix+".pdf").c_str());
+  
   delete c100;
   delete hnhits_vs_run;
   delete hnhits_vs_time;
   delete htotalQ_vs_run;
+  delete htotalQ_vs_time;
   delete hNEvents_vs_run;
+  delete hNEvents_vs_time;
   delete hNCleanEvents_vs_run;
+  delete hNCleanEvents_vs_time;
   delete hFracCleanEvents_vs_run;
+  delete hFracCleanEvents_vs_time;
   delete hNCleanEventsnorm_vs_run;
  
 }
