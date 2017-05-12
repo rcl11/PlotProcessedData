@@ -20,6 +20,8 @@
 #include <string>
 #include <bitset>
 #include <map>
+#include <stdlib.h>
+#include <algorithm>
 
 #include <boost/version.hpp>
 #include <boost/program_options.hpp>
@@ -69,31 +71,60 @@ std::map<std::string,THPlot::THPlot> ParseConfigs(std::string config_dir="config
   return plot_map;
 }
 
+//Finds cavity temperature for a given universal time. Based on information from deltaV, input by hand from the output of Teal's script
+TGraph* MakeCavityTempHist(){
+  fstream tempfile("data/temps.dat");
+  std::string reftime_str, temp_str;
+  std::getline(tempfile,reftime_str);
+  std::getline(tempfile,temp_str);
+  std::vector<double> reftimes, temps;
+  std::stringstream reftime_ss(reftime_str);
+  std::stringstream temp_ss(temp_str);
+  std::string temp, reftime;
+  while(std::getline(reftime_ss,reftime,',')) {
+      double corrected_time =  atof(reftime.c_str())/(60*60) - (40*24*365);
+      reftimes.push_back(corrected_time);
+  }
+  while(std::getline(temp_ss,temp,',')) {
+      temps.push_back(atof(temp.c_str()));
+  }
+  std::reverse(reftimes.begin(),reftimes.end());
+  std::reverse(temps.begin(),temps.end());
+  TGraph* timetemp = new TGraph(reftimes.size(), &reftimes[0], &temps[0] );
+  return timetemp;
+}
+
+double GetCavityTemp(double time, TGraph* temphist){
+    //TCanvas* ctest = new TCanvas();
+    //temphist->Draw();
+    //ctest->SaveAs("debug.png");
+    return temphist->Eval(time); 
+}
+
 void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, std::string output_dir="plots/" )
 {
-    
   SetStyle();
   TH1D* hnhits_vs_run = new TH1D( "hnhits_vs_run", "Mean number of hits per run", files.size(), 0.0, files.size() );
   hnhits_vs_run->Sumw2();
-  TH1D* hnhits_vs_time = new TH1D( "hnhits_vs_time", "Number of hits per 5 minutes", 2400, 64400, 64600 );
+  TH1D* hnhits_vs_time = new TH1D( "hnhits_vs_time", "Number of hits per 5 minutes", 3600, 64300, 64600 );
   hnhits_vs_time->Sumw2();
   TH1D* htotalQ_vs_run = new TH1D( "htotalQ_vs_run", "Mean total charge per run", files.size(), 0.0, files.size() );
   htotalQ_vs_run->Sumw2();
-  TH1D* htotalQ_vs_time = new TH1D( "htotalQ_vs_time", "Total charge per 5 minutes", 2400, 64400, 64600 );
+  TH1D* htotalQ_vs_time = new TH1D( "htotalQ_vs_time", "Total charge per 5 minutes", 3600, 64300, 64600 );
   htotalQ_vs_time->Sumw2();
   TH1D* hNEvents_vs_run = new TH1D( "hNEvents_vs_run", "Number of events per run", files.size(), 0.0, files.size() );
   hNEvents_vs_run->Sumw2();
-  TH1D* hNEvents_vs_time = new TH1D( "hNEvents_vs_rtime", "Number of events per 5 minutes",2400,64400,64600 );
+  TH1D* hNEvents_vs_time = new TH1D( "hNEvents_vs_rtime", "Number of events per 5 minutes",3600,64300,64600 );
   hNEvents_vs_time->Sumw2();
   TH1D* hNCleanEvents_vs_run = new TH1D( "hNCleanEvents_vs_run", "Number of clean events per run", files.size(), 0.0, files.size() );
   hNCleanEvents_vs_run->Sumw2();
-  TH1D* hNCleanEvents_vs_time = new TH1D( "hNCleanEvents_vs_time", "Number of clean events per 5 minutes",2400,64400,64600   );
+  TH1D* hNCleanEvents_vs_time = new TH1D( "hNCleanEvents_vs_time", "Number of clean events per 5 minutes",3600,64300,64600   );
   hNCleanEvents_vs_time->Sumw2();
   TH1D* hNCleanEventsnorm_vs_run = new TH1D( "hNCleanEventsnorm_vs_run", "Normalised number of clean events per run", files.size(), 0.0, files.size() );
   hNCleanEventsnorm_vs_run->Sumw2();
   TH1D* hFracCleanEvents_vs_run = new TH1D( "hFracCleanEvents_vs_run", "Fraction of clean events per run", files.size(), 0.0, files.size() );
   hFracCleanEvents_vs_run->Sumw2();
-  TH1D* hFracCleanEvents_vs_time = new TH1D( "hFracCleanEvents_vs_time", "Fraction of clean events per 5 minutes",2400,64400,64600  );
+  TH1D* hFracCleanEvents_vs_time = new TH1D( "hFracCleanEvents_vs_time", "Fraction of clean events per 5 minutes",3600,64300,64600  );
   hFracCleanEvents_vs_time->Sumw2();
   std::string start_run = "";
   std::string end_run = "";
@@ -103,7 +134,8 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
   if(ntuple) postfix = "_ntuple";
   double run_duration = 0;
   int file_count=0;
-  
+  TGraph * temphist = MakeCavityTempHist();
+
   for(unsigned i=0; i<files.size(); ++i){
       
     //Create a collection of histograms
@@ -148,7 +180,7 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
     TH2D herrtimez = plot_map["errtimez"].Get2DHist(); 
     TH2D herrenergy = plot_map["errenergy"].Get2DHist(); 
     TH2D hposrhoz = plot_map["posrhoz"].Get2DHist(); 
-    TH2D hposRz = plot_map["posRz"].Get2DHist(); 
+    TH2D hposRz = plot_map["posRz"].Get2DHist();
     TH1D hrpmt = plot_map["rpmt"].GetHist(); 
     TH1D hxpmt = plot_map["xpmt"].GetHist(); 
     TH1D hypmt = plot_map["ypmt"].GetHist(); 
@@ -358,6 +390,9 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
             hnhits_vs_time->Fill(event_time_secs/(60*60),rEV.GetNhits());
             htotalQ.Fill( rEV.GetTotalCharge() );
             htotalQ_vs_time->Fill(event_time_secs/(60*60),rEV.GetTotalCharge());
+            double cavity_temp = GetCavityTemp(event_time_secs/(60*60), temphist);
+            //std::cout << event_time_secs/(60*60) << std::endl;
+            //std::cout << cavity_temp << std::endl;
             //Fill some nhits and total q plots for different triggers fired
             //std::cout << std::bitset<32>(rEV.GetTrigType())/*.to_string()*/ << std::endl;
             if(RAT::BitManip::TestBit(rEV.GetTrigType(), RAT::DU::TrigBits::N100Low)){
@@ -773,6 +808,7 @@ int main(int argc, char** argv){
   std::vector<std::string> file_vec_temp = file_vec;
   file_vecs.push_back(file_vec_temp);
   file_vec.clear();
+  
   
   for(unsigned j=0; j<file_vecs.size(); j++){
     std::stringstream ss;
