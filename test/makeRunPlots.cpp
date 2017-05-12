@@ -124,12 +124,16 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
     TH1D htotalQ_OWLEH = plot_map["totalQ_OWLEH"].GetHist(); 
     TH1D hfitValid = plot_map["fitValid"].GetHist(); 
     TH1D hitr = plot_map["itr"].GetHist(); 
+    TH1D htime = plot_map["time"].GetHist(); 
     TH1D hposx = plot_map["posx"].GetHist(); 
     TH1D hposy = plot_map["posy"].GetHist(); 
     TH1D hposz = plot_map["posz"].GetHist(); 
     TH1D hposR = plot_map["posR"].GetHist(); 
     TH1D hposR3 = plot_map["posR3"].GetHist(); 
     TH2D hposxy = plot_map["posxy"].Get2DHist(); 
+    TH2D htimeposx = plot_map["timeposx"].Get2DHist(); 
+    TH2D htimeposy = plot_map["timeposy"].Get2DHist(); 
+    TH2D htimeposz = plot_map["timeposz"].Get2DHist(); 
     TH2D herrposx = plot_map["errposx"].Get2DHist(); 
     TH2D herrposy = plot_map["errposy"].Get2DHist(); 
     TH2D herrposz = plot_map["errposz"].Get2DHist(); 
@@ -139,6 +143,10 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
     TH2D herrposyitr = plot_map["errposyitr"].Get2DHist(); 
     TH2D herrposznhits = plot_map["errposznhits"].Get2DHist(); 
     TH2D herrposzitr = plot_map["errposzitr"].Get2DHist(); 
+    TH2D herrtimex = plot_map["errtimex"].Get2DHist(); 
+    TH2D herrtimey = plot_map["errtimey"].Get2DHist(); 
+    TH2D herrtimez = plot_map["errtimez"].Get2DHist(); 
+    TH2D herrenergy = plot_map["errenergy"].Get2DHist(); 
     TH2D hposrhoz = plot_map["posrhoz"].Get2DHist(); 
     TH2D hposRz = plot_map["posRz"].Get2DHist(); 
     TH1D hrpmt = plot_map["rpmt"].GetHist(); 
@@ -409,6 +417,7 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
               if( rvertex.ContainsPosition() && rvertex.ValidPosition() ) {
                 hfitValid.Fill(1.);
                 double R = sqrt(rvertex.GetPosition().X()*rvertex.GetPosition().X()  + rvertex.GetPosition().Y()*rvertex.GetPosition().Y() + rvertex.GetPosition().Z()*rvertex.GetPosition().Z());
+                //The below are all from fOptimiser inside PositionTimeLikelihood
                 if(rvertex.ValidPositivePositionError()) {
                   herrposx.Fill(rvertex.GetPosition().X(), rvertex.GetPositivePositionError().x());
                   herrposy.Fill(rvertex.GetPosition().Y(), rvertex.GetPositivePositionError().y());
@@ -420,6 +429,17 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
                   herrposznhits.Fill(rEV.GetNhits(), rvertex.GetPositivePositionError().z());
                   herrposzitr.Fill(rEV.GetClassifierResult("ITR:waterFitter").GetClassification("ITR"), rvertex.GetPositivePositionError().z());
                 }
+                if(rvertex.ValidPositiveTimeError()){
+                  herrtimex.Fill(rvertex.GetPosition().X(), rvertex.GetPositiveTimeError());
+                  herrtimey.Fill(rvertex.GetPosition().Y(), rvertex.GetPositiveTimeError());
+                  herrtimez.Fill(rvertex.GetPosition().Z(), rvertex.GetPositiveTimeError());
+                }
+                if(rvertex.ValidTime()){
+                  htime.Fill(rvertex.GetTime());
+                  htimeposx.Fill(rvertex.GetPosition().X(), rvertex.GetTime());
+                  htimeposy.Fill(rvertex.GetPosition().Y(), rvertex.GetTime());
+                  htimeposz.Fill(rvertex.GetPosition().Z(), rvertex.GetTime());
+                }
                 hposx.Fill(rvertex.GetPosition().X());
                 hposy.Fill(rvertex.GetPosition().Y());
                 hposz.Fill(rvertex.GetPosition().Z());
@@ -430,7 +450,13 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
                 hposR.Fill(R );
                 hposR3.Fill(pow(R,3)/pow(6005.3,3));
                 hitr.Fill(rEV.GetClassifierResult("ITR:waterFitter").GetClassification("ITR"));
-                if(rvertex.ValidEnergy() && rvertex.ContainsEnergy()) henergy.Fill(rvertex.GetEnergy());
+                if(rvertex.ValidEnergy() && rvertex.ContainsEnergy()) {
+                    henergy.Fill(rvertex.GetEnergy());
+                    if(rvertex.ValidPositiveEnergyError()){
+                      //Seems to be just filled with 1s for EnergyPromptLookup
+                      herrenergy.Fill(rvertex.GetEnergy(), rvertex.GetPositiveEnergyError());
+                    }
+                }
                 if(rEV.GetClassifierResult( "isotropy:waterFitter" ).GetValid()) hbeta14.Fill(rEV.GetClassifierResult("isotropy:waterFitter").GetClassification("snobeta14"));
               } else hfitValid.Fill(0.);
             } else hfitValid.Fill(0.);
@@ -466,6 +492,7 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
     plot_map["totalQ_OWLEH"].SetHist(htotalQ_OWLEH);
     plot_map["fitValid"].SetHist(hfitValid);
     plot_map["itr"].SetHist(hitr);
+    plot_map["time"].SetHist(htime);
     plot_map["posx"].SetHist(hposx);
     plot_map["posy"].SetHist(hposy);
     plot_map["posz"].SetHist(hposz);
@@ -482,6 +509,9 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
     plot_map["beta14"].SetHist(hbeta14);
     plot_map["energy"].SetHist(henergy);
     plot_map["posxy"].Set2DHist(hposxy);
+    plot_map["timeposx"].Set2DHist(htimeposx);
+    plot_map["timeposy"].Set2DHist(htimeposy);
+    plot_map["timeposz"].Set2DHist(htimeposz);
     plot_map["errposx"].Set2DHist(herrposx);
     plot_map["errposy"].Set2DHist(herrposy);
     plot_map["errposz"].Set2DHist(herrposz);
@@ -491,6 +521,10 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
     plot_map["errposyitr"].Set2DHist(herrposyitr);
     plot_map["errposznhits"].Set2DHist(herrposznhits);
     plot_map["errposzitr"].Set2DHist(herrposzitr);
+    plot_map["errtimex"].Set2DHist(herrtimex);
+    plot_map["errtimey"].Set2DHist(herrtimey);
+    plot_map["errtimez"].Set2DHist(herrtimez);
+    plot_map["errenergy"].Set2DHist(herrenergy);
     plot_map["nhitsz"].Set2DHist(hnhitsz);
     plot_map["posrhoz"].Set2DHist(hposrhoz);
     plot_map["posRz"].Set2DHist(hposRz);

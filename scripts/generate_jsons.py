@@ -21,7 +21,7 @@ nice_labels = {
     'posR' : 'R position',
     'posR3' : 'R cubed position',
     'posRz' : 'R vs z position',
-    'posrz' : 'rho vs z position',
+    'posrhoz' : 'rho vs z position',
     'posxy' : 'x vs y position',
     'posx' : 'x position',
     'posy' : 'y position',
@@ -48,6 +48,14 @@ nice_labels = {
     'errposyitr': 'y err vs ITR',
     'errposznhits': 'z err vs nhits',
     'errposzitr': 'z err vs ITR',
+    'errtimex': 'time err vs x',
+    'errtimey': 'time err vs y',
+    'errtimez': 'time err vs z',
+    'time': 'fitted time',
+    'timeposx': 'fitted time vs x',
+    'timeposy': 'fitted time vs y',
+    'timeposz': 'fitted time vs z',
+    'errenergy': 'energy err vs energy',
 }
 
 maintenance_runs = ['14713','14714','14715','15091']
@@ -94,8 +102,12 @@ for filename in glob.glob(options.dirname+"/"+"*.png"):
     trig_type = "Any trigger"
     if "nhitsz" in plot_type:
         plot_type = 'nhitsz'
-    elif "errposRnhits" in plot_type:
-        plot_type = 'errposRnhits'
+    elif "errposxnhits" in plot_type:
+        plot_type = 'errposxnhits'
+    elif "errposynhits" in plot_type:
+        plot_type = 'errposynhits'
+    elif "errposznhits" in plot_type:
+        plot_type = 'errposznhits'
     elif "nhits" in plot_type:
         if not "nhits_" in plot_type or "nhits_log" in plot_type:
             trig_type = "Any trigger"
