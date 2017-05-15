@@ -17,6 +17,7 @@ parser.add_option("-d", "--directory", dest="dirname",
 nice_labels = {
     'nhits' : 'Number of hits',
     'nhitsz' : 'Number of hits vs z',
+    'nhitstemp' : 'Number of hits vs temperature',
     'nhits_log' : 'Number of hits log scale',
     'posR' : 'R position',
     'posR3' : 'R cubed position',
@@ -70,7 +71,7 @@ for filename in glob.glob(options.dirname+"/"+"*.png"):
     json_name = filename.replace(".png",".json")
     json_file = open(json_name, "w")
     p = re.compile("r([0-9]*)_s")
-    if not p.findall(filename): 
+    if not p.findall(filename) and "_vs_" in filename: 
         data['plot type'] = "vs Run"
         data['trigger type'] = "Any trigger"
         json.dump(data,json_file)
@@ -78,7 +79,8 @@ for filename in glob.glob(options.dirname+"/"+"*.png"):
         continue
         
     #run number    
-    run_number = p.findall(filename)[0]
+    if p.findall(filename):
+        run_number = p.findall(filename)[0]
     if run_number in maintenance_runs :
         data['run type'] = 'maintenance'
     elif run_number in experimental_runs:
@@ -91,17 +93,26 @@ for filename in glob.glob(options.dirname+"/"+"*.png"):
         
     
     j = re.compile("_s([0-9]*)")
-    subrun_number = j.findall(filename)[0]
+    if j.findall(filename):
+      subrun_number = j.findall(filename)[0]
 
+    t = re.compile("[0-9*]/(.*)_r[0-9]*_to_")
     q = re.compile("[0-9*]/(.*)_r")
     #plot type    
-    plot_type = q.findall(filename)[0]
-    data['run number'] = run_number+"_"+subrun_number
+    if not p.findall(filename) and not j.findall(filename):
+        data['run number'] = "sum of runs"
+        plot_type = t.findall(filename)[0]
+    else:    
+      if q.findall(filename):
+        plot_type = q.findall(filename)[0]
+        data['run number'] = run_number+"_"+subrun_number
 
     #trigger type    
     trig_type = "Any trigger"
     if "nhitsz" in plot_type:
         plot_type = 'nhitsz'
+    if "nhitstemp" in plot_type:
+        plot_type = 'nhitstemp'
     elif "errposxnhits" in plot_type:
         plot_type = 'errposxnhits'
     elif "errposynhits" in plot_type:

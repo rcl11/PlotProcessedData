@@ -21,7 +21,7 @@ class THPlot {
 
         THPlot(){;}
         
-        THPlot(std::string config_file) {
+        THPlot(std::string config_file, std::string postfix="") {
             
             //Fill class member variables from config file
             // Setup options.
@@ -58,8 +58,8 @@ class THPlot {
             po::notify(vm);  
             
             SetMyStyle_();
-            if(twoD_) hist2D_ = TH2D(name_.c_str(),name_.c_str(),nbinsx_,x_start_bin_,x_end_bin_,nbinsy_,y_start_bin_,y_end_bin_);
-            else hist_ = TH1D(name_.c_str(),name_.c_str(),nbinsx_,x_start_bin_,x_end_bin_);
+            if(twoD_) hist2D_ = TH2D( (name_+postfix).c_str() ,(name_+postfix).c_str() ,nbinsx_,x_start_bin_,x_end_bin_,nbinsy_,y_start_bin_,y_end_bin_);
+            else hist_ = TH1D( (name_+postfix).c_str(),(name_+postfix).c_str(),nbinsx_,x_start_bin_,x_end_bin_);
             std::stringstream ss(fill_colour);
             std::vector<Int_t> vect;
             Float_t i;

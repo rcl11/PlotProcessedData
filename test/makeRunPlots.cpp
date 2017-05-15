@@ -18,6 +18,7 @@
 #include <TTree.h>
 #include <TCut.h>
 #include <string>
+#include <vector>
 #include <bitset>
 #include <map>
 #include <stdlib.h>
@@ -51,7 +52,7 @@ std::pair<std::string, std::string> ParseRunInfo(const std::string filename){
 }
 
 //Create map to store all plots requested in config files and set style choices
-std::map<std::string,THPlot::THPlot> ParseConfigs(std::string config_dir="config/"){
+std::map<std::string,THPlot::THPlot> ParseConfigs(std::string config_dir="config/", std::string totals=""){
   std::map<std::string,THPlot::THPlot> plot_map;
 
   fs::path p(config_dir.c_str());
@@ -62,7 +63,7 @@ std::map<std::string,THPlot::THPlot> ParseConfigs(std::string config_dir="config
     if (fs::is_regular_file(itr->path())) {
         std::string current_file = itr->path().string();
         //Create plot object setting styles from the config file
-        THPlot::THPlot plot(current_file.c_str());
+        THPlot::THPlot plot(current_file.c_str(), totals);
         current_file = current_file.erase(current_file.find(".cfg"),current_file.size()-1);
         current_file = current_file.erase(0,current_file.find("/")+1);
         plot_map[current_file] = plot;
@@ -82,22 +83,32 @@ TGraph* MakeCavityTempHist(){
   std::stringstream temp_ss(temp_str);
   std::string temp, reftime;
   while(std::getline(reftime_ss,reftime,',')) {
-      double corrected_time =  atof(reftime.c_str())/(60*60) - (40*24*365);
-      reftimes.push_back(corrected_time);
+    double corrected_time =  atof(reftime.c_str())/(60*60) - (40*24*365);
+    reftimes.push_back(corrected_time);
   }
   while(std::getline(temp_ss,temp,',')) {
-      temps.push_back(atof(temp.c_str()));
+    temps.push_back(atof(temp.c_str()));
   }
   std::reverse(reftimes.begin(),reftimes.end());
   std::reverse(temps.begin(),temps.end());
-  TGraph* timetemp = new TGraph(reftimes.size(), &reftimes[0], &temps[0] );
+  //Remove any points where temp = 0, this happens when the database returns N/A for whatever reason 
+  std::vector<double> corrreftimes, corrtemps; 
+  for(unsigned k = 0; k<reftimes.size(); k++){
+    if(!(temps[k]==0)){
+      corrreftimes.push_back(reftimes[k]);
+      corrtemps.push_back(temps[k]);
+    }
+  }
+ 
+  TGraph* timetemp = new TGraph(corrreftimes.size(), &corrreftimes[0], &corrtemps[0] );
+  TCanvas* ctest = new TCanvas("ctest","ctest",700,500);
+  timetemp->Draw();
+  ctest->SaveAs("data/temp_dist.png");
+  delete ctest;
   return timetemp;
 }
 
 double GetCavityTemp(double time, TGraph* temphist){
-    //TCanvas* ctest = new TCanvas();
-    //temphist->Draw();
-    //ctest->SaveAs("debug.png");
     return temphist->Eval(time); 
 }
 
@@ -126,6 +137,7 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
   hFracCleanEvents_vs_run->Sumw2();
   TH1D* hFracCleanEvents_vs_time = new TH1D( "hFracCleanEvents_vs_time", "Fraction of clean events per 5 minutes",3600,64300,64600  );
   hFracCleanEvents_vs_time->Sumw2();
+
   std::string start_run = "";
   std::string end_run = "";
   double start_run_time=0;
@@ -135,6 +147,22 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
   double run_duration = 0;
   int file_count=0;
   TGraph * temphist = MakeCavityTempHist();
+  std::map<std::string,THPlot::THPlot> plot_map_totals = ParseConfigs("config/","total");
+  std::vector<std::map<std::string,THPlot::THPlot> > plot_maps;
+  std::vector<std::string> trig_names = {"N100L","N100M","N100H","N20","N20LB","ESUML","ESUMH","OWLN","OWLEL","OWLEH","PULGT","Prescale","Pedestal"}; 
+  std::vector<std::string> dataclean_names = {"prescale","zerozerocut","ftscut","flashergeocut","icttimespread","junkcut","muontag","neckcut","owlcut","qcluster","qvnhit","qvt","ringoffire","tpmuonshort"}; 
+  //This should really go inside the class but im feeling hacky today
+  TH1D htrigger_total = plot_map_totals["trigger"].GetHist();
+  TH1D hdataclean_total = plot_map_totals["dataclean"].GetHist();
+  for(unsigned h=0;h<trig_names.size();h++){
+    htrigger_total.GetXaxis()->SetBinLabel(h+1,trig_names[h].c_str());
+  }
+  for(unsigned h=0;h<dataclean_names.size();h++){
+    hdataclean_total.GetXaxis()->SetBinLabel(h+1,dataclean_names[h].c_str());
+  }
+  hdataclean_total.GetXaxis()->SetBinLabel(dataclean_names.size()+1,"allevents");
+  plot_map_totals["trigger"].SetHist(htrigger_total);
+  plot_map_totals["dataclean"].SetHist(hdataclean_total);
 
   for(unsigned i=0; i<files.size(); ++i){
       
@@ -187,6 +215,7 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
     TH1D hzpmt = plot_map["zpmt"].GetHist(); 
     TH1D htpmt = plot_map["tpmt"].GetHist(); 
     TH2D hnhitsz = plot_map["nhitsz"].Get2DHist(); 
+    TH2D hnhitstemp = plot_map["nhitstemp"].Get2DHist(); 
     TH1D hduration = plot_map["duration"].GetHist(); 
     TH1D htrigger = plot_map["trigger"].GetHist(); 
     TH1D hdataclean = plot_map["dataclean"].GetHist(); 
@@ -195,14 +224,13 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
   
     TFile *f = new TFile(files[i].c_str());
     
-    std::vector<std::string> trig_names = {"N100L","N100M","N100H","N20","N20LB","ESUML","ESUMH","OWLN","OWLEL","OWLEH","PULGT","Prescale","Pedestal"}; 
     for(unsigned h=0;h<trig_names.size();h++){
       htrigger.GetXaxis()->SetBinLabel(h+1,trig_names[h].c_str());
     }
-    std::vector<std::string> dataclean_names = {"prescale","zerozerocut","ftscut","flashergeocut","icttimespread","junkcut","muontag","neckcut","owlcut","qcluster","qvnhit","qvt","ringoffire","tpmuonshort"}; 
     for(unsigned h=0;h<dataclean_names.size();h++){
       hdataclean.GetXaxis()->SetBinLabel(h+1,dataclean_names[h].c_str());
     }
+    hdataclean.GetXaxis()->SetBinLabel(dataclean_names.size()+1,"allevents");
   
     int n_cleanevents=0;
     int n_events=0;
@@ -271,10 +299,13 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
         for(unsigned g=0; g<dataclean_names.size(); g++){
           if(cleanbits.test(g)) hdataclean.Fill(dataclean_names[g].c_str(),1);
         }
+        hdataclean.Fill("allevents",1);
         hNEvents_vs_time->Fill(event_time_secs/(60*60),1);
         if(dataclean && compatibility_cut) {
           hNCleanEvents_vs_time->Fill(event_time_secs/(60*60),1);
           hnhits.Fill(nhits);
+          double cavity_temp = GetCavityTemp(event_time_secs/(60*60), temphist);
+          hnhitstemp.Fill(nhits,cavity_temp);
           hnhits_vs_time->Fill(event_time_secs/(60*60),nhits);
           htotalQ.Fill(charge);
           htotalQ_vs_time->Fill(event_time_secs/(60*60),charge);
@@ -379,6 +410,7 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
           for(unsigned g=0; g<dataclean_names.size(); g++){
             if(cleanbits.test(g)) hdataclean.Fill(dataclean_names[g].c_str(),1);
           }
+          hdataclean.Fill("allevents",1);
           
           hNEvents_vs_time->Fill(event_time_secs/(60*60),1);
           if(RAT::EventIsClean( rEV, rMeta, rDataCleaningWord )){
@@ -391,8 +423,7 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
             htotalQ.Fill( rEV.GetTotalCharge() );
             htotalQ_vs_time->Fill(event_time_secs/(60*60),rEV.GetTotalCharge());
             double cavity_temp = GetCavityTemp(event_time_secs/(60*60), temphist);
-            //std::cout << event_time_secs/(60*60) << std::endl;
-            //std::cout << cavity_temp << std::endl;
+            hnhitstemp.Fill(rEV.GetNhits(),cavity_temp);
             //Fill some nhits and total q plots for different triggers fired
             //std::cout << std::bitset<32>(rEV.GetTrigType())/*.to_string()*/ << std::endl;
             if(RAT::BitManip::TestBit(rEV.GetTrigType(), RAT::DU::TrigBits::N100Low)){
@@ -561,6 +592,7 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
     plot_map["errtimez"].Set2DHist(herrtimez);
     plot_map["errenergy"].Set2DHist(herrenergy);
     plot_map["nhitsz"].Set2DHist(hnhitsz);
+    plot_map["nhitstemp"].Set2DHist(hnhitstemp);
     plot_map["posrhoz"].Set2DHist(hposrhoz);
     plot_map["posRz"].Set2DHist(hposRz);
   
@@ -571,12 +603,23 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
     std::string outname = run_info.first + "_" + run_info.second; 
     std::map<std::string, THPlot::THPlot>::iterator it;
     for ( it = plot_map.begin(); it != plot_map.end(); it++ )
-    {
-        THPlot::THPlot plot = it->second;
-        plot.SetOutFilename(output_dir + plot.GetOutFilename() + "_" + outname + postfix);
-        plot.SetRunInfo(run_info);
-        plot.GeneratePlot();
+    { 
+      std::string label = it->first;  
+      THPlot::THPlot plot = it->second;
+      plot.SetOutFilename(output_dir + plot.GetOutFilename() + "_" + outname + postfix);
+      plot.SetRunInfo(run_info);
+      plot.GeneratePlot();
+      TH1D totalhist = plot_map_totals[label].GetHist();
+      TH2D totaltwoDhist = plot_map_totals[label].Get2DHist();
+      TH1D temphist = plot.GetHist(); 
+      TH2D temptwoDhist = plot.Get2DHist();
+      totalhist.Add(&temphist);
+      totaltwoDhist.Add(&temptwoDhist);
+      plot_map_totals[label].SetHist(totalhist);
+      plot_map_totals[label].Set2DHist(totaltwoDhist);
     }
+    
+       
     //Dont bother plotting any runs which last less than 1 minute in the comparison plots
     //if(run_duration < 60) continue;
     //Count the files/runs which are deemed good by whatever conditions we want to set
@@ -601,13 +644,17 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
     hNCleanEventsnorm_vs_run->Fill(file_count-1, n_cleanevents/run_duration);
     hNCleanEventsnorm_vs_run->SetBinError(file_count,sqrt(n_cleanevents/run_duration));
     hNCleanEventsnorm_vs_run->GetXaxis()->SetBinLabel(file_count,bin_label.c_str());
-    hFracCleanEvents_vs_run->Fill(file_count-1, float(n_cleanevents)/float(n_events));
-    hFracCleanEvents_vs_run->SetBinError(file_count,sqrt( pow((sqrt(n_cleanevents)/n_cleanevents),2) + pow((sqrt(n_events)/n_events),2)));
-    hFracCleanEvents_vs_run->GetXaxis()->SetBinLabel(file_count,bin_label.c_str());
     //delete f;
   }
   
-
+  //Create a version of all per-run plots which is a sum over all runs
+  std::map<std::string, THPlot::THPlot>::iterator it;
+  for ( it = plot_map_totals.begin(); it != plot_map_totals.end(); it++ ){
+    THPlot::THPlot plot = it->second;
+    plot.SetOutFilename(output_dir + plot.GetOutFilename() + "_" +start_run+"_to_"+end_run + postfix);
+    plot.GeneratePlot();
+  }
+  
   SetStyle();
   TCanvas* c100 = new TCanvas("c100","c100",1000,400);
   hnhits_vs_run->SetMarkerColor(TColor::GetColor(220, 24, 24));
@@ -726,6 +773,8 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
   c100->SaveAs((output_dir+"ncleaneventsnorm_vs_run_"+start_run+"_to_"+end_run+postfix+".png").c_str());
   c100->SaveAs((output_dir+"ncleaneventsnorm_vs_run_"+start_run+"_to_"+end_run+postfix+".pdf").c_str());
   
+  hFracCleanEvents_vs_run = (TH1D*)hNCleanEvents_vs_run->Clone("hFracCleanEvents_vs_run");
+  hFracCleanEvents_vs_run->Divide(hNEvents_vs_run);
   hFracCleanEvents_vs_run->SetMarkerColor(kMagenta);
   hFracCleanEvents_vs_run->SetMarkerStyle(20);
   hFracCleanEvents_vs_run->SetLineColor(kMagenta);

@@ -145,7 +145,7 @@ int THPlot::GeneratePlot() {
     SetMyStyle_();
     TCanvas* c1 = new TCanvas("c1","c1",cwidth_,cheight_);
     if(!twoD_){
-      hist_.Sumw2();
+      if(hist_.GetSumw2N() == 0) hist_.Sumw2();
       hist_.GetYaxis()->SetTitle( y_title_.c_str() );
       hist_.GetXaxis()->SetTitle( x_title_.c_str() );
       hist_.SetFillStyle(1001);
