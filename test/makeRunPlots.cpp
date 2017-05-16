@@ -99,11 +99,14 @@ TGraph* MakeCavityTempHist(){
       corrtemps.push_back(temps[k]);
     }
   }
- 
+  SetStyle();
   TGraph* timetemp = new TGraph(corrreftimes.size(), &corrreftimes[0], &corrtemps[0] );
-  TCanvas* ctest = new TCanvas("ctest","ctest",700,500);
+  TCanvas* ctest = new TCanvas("ctest","ctest",1200,500);
+  timetemp->GetXaxis()->SetTitle("Universal time (hours)");
+  timetemp->GetYaxis()->SetTitle("Temperature (C)");
   timetemp->Draw();
   ctest->SaveAs("data/temp_dist.png");
+  ctest->SaveAs("data/temp_dist.pdf");
   delete ctest;
   return timetemp;
 }
@@ -137,6 +140,8 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
   hFracCleanEvents_vs_run->Sumw2();
   TH1D* hFracCleanEvents_vs_time = new TH1D( "hFracCleanEvents_vs_time", "Fraction of clean events per 5 minutes",3600,64300,64600  );
   hFracCleanEvents_vs_time->Sumw2();
+  TH1D* hTemp_vs_run = new TH1D( "hTemp_vs_run", "Mean cavity temperature per run", files.size(), 0.0, files.size() );
+  hTemp_vs_run->Sumw2();
 
   std::string start_run = "";
   std::string end_run = "";
@@ -150,7 +155,7 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
   std::map<std::string,THPlot::THPlot> plot_map_totals = ParseConfigs("config/","total");
   std::vector<std::map<std::string,THPlot::THPlot> > plot_maps;
   std::vector<std::string> trig_names = {"N100L","N100M","N100H","N20","N20LB","ESUML","ESUMH","OWLN","OWLEL","OWLEH","PULGT","Prescale","Pedestal"}; 
-  std::vector<std::string> dataclean_names = {"prescale","zerozerocut","ftscut","flashergeocut","icttimespread","junkcut","muontag","neckcut","owlcut","qcluster","qvnhit","qvt","ringoffire","tpmuonshort"}; 
+  std::vector<std::string> dataclean_names = {"prescale","zerozerocut","crateisotropy","ftscut","flashergeocut","icttimespread","junkcut","muontag","neckcut","owlcut","qcluster","qvnhit","qvt","ringoffire","tpmuonshort"}; 
   //This should really go inside the class but im feeling hacky today
   TH1D htrigger_total = plot_map_totals["trigger"].GetHist();
   TH1D hdataclean_total = plot_map_totals["dataclean"].GetHist();
@@ -221,6 +226,7 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
     TH1D hdataclean = plot_map["dataclean"].GetHist(); 
     TH1D hbeta14 = plot_map["beta14"].GetHist(); 
     TH1D henergy = plot_map["energy"].GetHist(); 
+    TH1D htemp = plot_map["temp"].GetHist(); 
   
     TFile *f = new TFile(files[i].c_str());
     
@@ -306,6 +312,7 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
           hnhits.Fill(nhits);
           double cavity_temp = GetCavityTemp(event_time_secs/(60*60), temphist);
           hnhitstemp.Fill(nhits,cavity_temp);
+          htemp.Fill(cavity_temp);
           hnhits_vs_time->Fill(event_time_secs/(60*60),nhits);
           htotalQ.Fill(charge);
           htotalQ_vs_time->Fill(event_time_secs/(60*60),charge);
@@ -424,6 +431,7 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
             htotalQ_vs_time->Fill(event_time_secs/(60*60),rEV.GetTotalCharge());
             double cavity_temp = GetCavityTemp(event_time_secs/(60*60), temphist);
             hnhitstemp.Fill(rEV.GetNhits(),cavity_temp);
+            htemp.Fill(cavity_temp);
             //Fill some nhits and total q plots for different triggers fired
             //std::cout << std::bitset<32>(rEV.GetTrigType())/*.to_string()*/ << std::endl;
             if(RAT::BitManip::TestBit(rEV.GetTrigType(), RAT::DU::TrigBits::N100Low)){
@@ -574,6 +582,7 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
     plot_map["dataclean"].SetHist(hdataclean);
     plot_map["beta14"].SetHist(hbeta14);
     plot_map["energy"].SetHist(henergy);
+    plot_map["temp"].SetHist(htemp);
     plot_map["posxy"].Set2DHist(hposxy);
     plot_map["timeposx"].Set2DHist(htimeposx);
     plot_map["timeposy"].Set2DHist(htimeposy);
@@ -632,6 +641,9 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
     if(file_count==1) start_run = bin_label;
     end_run = bin_label;
     hnhits_vs_run->GetXaxis()->SetBinLabel(file_count,bin_label.c_str());
+    hTemp_vs_run->Fill(file_count-1, htemp.GetMean());
+    hTemp_vs_run->SetBinError(file_count,htemp.GetMeanError());
+    hTemp_vs_run->GetXaxis()->SetBinLabel(file_count,bin_label.c_str());
     htotalQ_vs_run->Fill(file_count-1, htotalQ.GetMean());
     htotalQ_vs_run->SetBinError(file_count,htotalQ.GetMeanError());
     htotalQ_vs_run->GetXaxis()->SetBinLabel(file_count,bin_label.c_str());
@@ -684,6 +696,19 @@ void CreateRunPlots( const std::vector<std::string>& files, bool ntuple=true, st
   c100->Update();
   c100->SaveAs((output_dir+"nhits_vs_time_"+start_run+"_to_"+end_run+postfix+".png").c_str());
   c100->SaveAs((output_dir+"nhits_vs_time_"+start_run+"_to_"+end_run+postfix+".pdf").c_str());
+  
+  hTemp_vs_run->SetMarkerColor(TColor::GetColor(250, 155, 107));
+  hTemp_vs_run->SetMarkerStyle(20);
+  hTemp_vs_run->SetLineColor(TColor::GetColor(250, 155, 107));
+  hTemp_vs_run->GetYaxis()->SetTitle( "Mean cavity Temp (C)" );
+  hTemp_vs_run->GetXaxis()->SetTitle( "Run ID" );
+  hTemp_vs_run->GetXaxis()->SetRangeUser(0,file_count);
+  hTemp_vs_run->GetYaxis()->SetTitleOffset(0.8);
+  hTemp_vs_run->SetMinimum(0);
+  hTemp_vs_run->Draw("PE1");
+  c100->Update();
+  c100->SaveAs((output_dir+"Temp_vs_run_"+start_run+"_to_"+end_run+postfix+".png").c_str());
+  c100->SaveAs((output_dir+"Temp_vs_run_"+start_run+"_to_"+end_run+postfix+".pdf").c_str());
   
   htotalQ_vs_run->SetMarkerColor(TColor::GetColor(142, 24, 220));
   htotalQ_vs_run->SetMarkerStyle(20);

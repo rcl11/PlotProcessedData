@@ -57,6 +57,7 @@ nice_labels = {
     'timeposy': 'fitted time vs y',
     'timeposz': 'fitted time vs z',
     'errenergy': 'energy err vs energy',
+    'temp': 'cavity temp',
 }
 
 maintenance_runs = ['14713','14714','14715','15091']
