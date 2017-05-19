@@ -198,6 +198,8 @@ void CreateRunPlots( const std::vector<std::vector<std::string> >& files, bool n
     TH1D hposz = plot_map["posz"].GetHist(); 
     TH1D hposR = plot_map["posR"].GetHist(); 
     TH1D hposR3 = plot_map["posR3"].GetHist(); 
+    TH1D hudotr = plot_map["udotr"].GetHist(); 
+    TH2D hudotrz = plot_map["udotrz"].Get2DHist(); 
     TH2D hposxy = plot_map["posxy"].Get2DHist(); 
     TH2D htimeposx = plot_map["timeposx"].Get2DHist(); 
     TH2D htimeposy = plot_map["timeposy"].Get2DHist(); 
@@ -234,6 +236,8 @@ void CreateRunPlots( const std::vector<std::vector<std::string> >& files, bool n
     TH1D hposRgoodfit = plot_map["posRgoodfit"].GetHist(); 
     TH1D hposR3goodfit = plot_map["posR3goodfit"].GetHist(); 
     TH2D hposxygoodfit = plot_map["posxygoodfit"].Get2DHist(); 
+    TH1D hudotrgoodfit = plot_map["udotrgoodfit"].GetHist(); 
+    TH2D hudotrzgoodfit = plot_map["udotrzgoodfit"].Get2DHist(); 
     TH2D htimeposxgoodfit = plot_map["timeposxgoodfit"].Get2DHist(); 
     TH2D htimeposygoodfit = plot_map["timeposygoodfit"].Get2DHist(); 
     TH2D htimeposzgoodfit = plot_map["timeposzgoodfit"].Get2DHist(); 
@@ -298,6 +302,7 @@ void CreateRunPlots( const std::vector<std::vector<std::string> >& files, bool n
           ULong64_t flag;
           ULong64_t applied_flag;
           Double_t posx, posy, posz;
+          Double_t dirx, diry, dirz;
           Double_t posxPosError, posyPosError, poszPosError;
           bool fit_valid;
           Double_t itr;
@@ -315,6 +320,9 @@ void CreateRunPlots( const std::vector<std::vector<std::string> >& files, bool n
           t1->SetBranchAddress("posx",&posx);
           t1->SetBranchAddress("posy",&posy);
           t1->SetBranchAddress("posz",&posz);
+          t1->SetBranchAddress("dirx",&dirx);
+          t1->SetBranchAddress("diry",&diry);
+          t1->SetBranchAddress("dirz",&dirz);
           t1->SetBranchAddress("posxPosError",&posxPosError);
           t1->SetBranchAddress("posyPosError",&posyPosError);
           t1->SetBranchAddress("poszPosError",&poszPosError);
@@ -427,6 +435,9 @@ void CreateRunPlots( const std::vector<std::vector<std::string> >& files, bool n
                 hposx.Fill(posx);
                 hposy.Fill(posy);
                 hposz.Fill(posz);
+                TVector3 direction(dirx,diry,dirz);
+                hudotr.Fill(direction.Dot(TVector3(0,0,1)));
+                hudotrz.Fill(direction.Dot(TVector3(0,0,1)),posz);
                 hposxy.Fill(posx,posy);
                 hnhitsz.Fill(nhits,posz);
                 hbeta14.Fill(beta14);
@@ -457,6 +468,9 @@ void CreateRunPlots( const std::vector<std::vector<std::string> >& files, bool n
                   hposxgoodfit.Fill(posx);
                   hposygoodfit.Fill(posy);
                   hposzgoodfit.Fill(posz);
+                  TVector3 direction(dirx,diry,dirz);
+                  hudotrgoodfit.Fill(direction.Dot(TVector3(0,0,1)));
+                  hudotrzgoodfit.Fill(direction.Dot(TVector3(0,0,1)),posz);
                   hposxygoodfit.Fill(posx,posy);
                   hnhitszgoodfit.Fill(nhits,posz);
                   hbeta14goodfit.Fill(beta14);
@@ -624,6 +638,9 @@ void CreateRunPlots( const std::vector<std::vector<std::string> >& files, bool n
                     hposy.Fill(rvertex.GetPosition().Y());
                     hposz.Fill(rvertex.GetPosition().Z());
                     hposxy.Fill(rvertex.GetPosition().X(),rvertex.GetPosition().Y());
+                    TVector3 direction = rvertex.GetDirection();
+                    hudotr.Fill(direction.Dot(TVector3(0,0,1)));
+                    hudotrz.Fill(direction.Dot(TVector3(0,0,1)),rvertex.GetPosition().Z());
                     hnhitsz.Fill(rEV.GetNhits(),rvertex.GetPosition().Z());
                     hposRz.Fill(R,rvertex.GetPosition().Z());
                     hposrhoz.Fill(sqrt(rvertex.GetPosition().X()*rvertex.GetPosition().X() + rvertex.GetPosition().Y()*rvertex.GetPosition().Y()),rvertex.GetPosition().Z());
@@ -667,6 +684,9 @@ void CreateRunPlots( const std::vector<std::vector<std::string> >& files, bool n
                         hposxgoodfit.Fill(rvertex.GetPosition().X());
                         hposygoodfit.Fill(rvertex.GetPosition().Y());
                         hposzgoodfit.Fill(rvertex.GetPosition().Z());
+                        TVector3 direction = rvertex.GetDirection();
+                        hudotrgoodfit.Fill(direction.Dot(TVector3(0,0,1)));
+                        hudotrzgoodfit.Fill(direction.Dot(TVector3(0,0,1)),rvertex.GetPosition().Z());
                         hposxygoodfit.Fill(rvertex.GetPosition().X(),rvertex.GetPosition().Y());
                         hnhitszgoodfit.Fill(rEV.GetNhits(),rvertex.GetPosition().Z());
                         hposRzgoodfit.Fill(R,rvertex.GetPosition().Z());
@@ -726,6 +746,7 @@ void CreateRunPlots( const std::vector<std::vector<std::string> >& files, bool n
     plot_map["fitValid"].SetHist(hfitValid);
     plot_map["itr"].SetHist(hitr);
     plot_map["time"].SetHist(htime);
+    plot_map["udotr"].SetHist(hudotr);
     plot_map["posx"].SetHist(hposx);
     plot_map["posy"].SetHist(hposy);
     plot_map["posz"].SetHist(hposz);
@@ -738,6 +759,7 @@ void CreateRunPlots( const std::vector<std::vector<std::string> >& files, bool n
     plot_map["tpmt"].SetHist(htpmt);
     plot_map["beta14"].SetHist(hbeta14);
     plot_map["energy"].SetHist(henergy);
+    plot_map["udotrz"].Set2DHist(hudotrz);
     plot_map["posxy"].Set2DHist(hposxy);
     plot_map["timeposx"].Set2DHist(htimeposx);
     plot_map["timeposy"].Set2DHist(htimeposy);
@@ -767,6 +789,8 @@ void CreateRunPlots( const std::vector<std::vector<std::string> >& files, bool n
     plot_map["posRgoodfit"].SetHist(hposRgoodfit);
     plot_map["posR3goodfit"].SetHist(hposR3goodfit);
     plot_map["rpmtgoodfit"].SetHist(hrpmtgoodfit);
+    plot_map["udotrgoodfit"].SetHist(hudotrgoodfit);
+    plot_map["udotrzgoodfit"].Set2DHist(hudotrzgoodfit);
     plot_map["xpmtgoodfit"].SetHist(hxpmtgoodfit);
     plot_map["ypmtgoodfit"].SetHist(hypmtgoodfit);
     plot_map["zpmtgoodfit"].SetHist(hzpmtgoodfit);
