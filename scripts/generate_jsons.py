@@ -27,14 +27,6 @@ nice_labels = {
     'posx' : 'x position',
     'posy' : 'y position',
     'posz' : 'z position',
-    'posRgoodfit' : 'R position goodfit',
-    'posR3goodfit' : 'R cubed position goodfit',
-    'posRzgoodfit' : 'R vs z position goodfit',
-    'posrhozgoodfit' : 'rho vs z position goodfit',
-    'posxygoodfit' : 'x vs y position goodfit',
-    'posxgoodfit' : 'x position goodfit',
-    'posygoodfit' : 'y position goodfit',
-    'poszgoodfit' : 'z position goodfit',
     'totalQ' : 'Total charge',
     'duration' : 'Run duration',
     'trigger' : 'Trigger word',
@@ -47,6 +39,8 @@ nice_labels = {
     'ypmt' : 'PMT y position',
     'zpmt' : 'PMT z position',
     'itr' : 'ITR',
+    'udotr' : 'U dot R',
+    'udotrz' : 'U dot R vs z',
     'beta14': 'beta14',
     'energy': 'energy',
     'errposx': 'x err vs x',
@@ -66,31 +60,6 @@ nice_labels = {
     'timeposy': 'fitted time vs y',
     'timeposz': 'fitted time vs z',
     'errenergy': 'energy err vs energy',
-    'rpmtgoodfit' : 'PMT R position good fit',
-    'tpmtgoodfit' : 'PMT time good fit',
-    'xpmtgoodfit' : 'PMT x position good fit',
-    'ypmtgoodfit' : 'PMT y position  goodfit',
-    'zpmtgoodfit' : 'PMT z position goodfit',
-    'itrgoodfit' : 'ITR goodfit',
-    'beta14goodfit': 'beta14 goodfit',
-    'energygoodfit': 'energy goodfit',
-    'errposxgoodfit': 'x err vs x goodfit',
-    'errposygoodfit': 'y err vs y goodfit',
-    'errposzgoodfit': 'z err vs z goodfit',
-    'errposxnhitsgoodfit': 'x err vs nhits goodfit',
-    'errposxitrgoodfit': 'x err vs ITR goodfit',
-    'errposynhitsgoodfit': 'y err vs nhits goodfit',
-    'errposyitrgoodfit': 'y err vs ITR goodfit',
-    'errposznhitsgoodfit': 'z err vs nhits goodfit',
-    'errposzitrgoodfit': 'z err vs ITR goodfit',
-    'errtimexgoodfit': 'time err vs x goodfit',
-    'errtimeygoodfit': 'time err vs y goodfit',
-    'errtimezgoodfit': 'time err vs z goodfit',
-    'timegoodfit': 'fitted time goodfit',
-    'timeposxgoodfit': 'fitted time vs x goodfit',
-    'timeposygoodfit': 'fitted time vs y goodfit',
-    'timeposzgoodfit': 'fitted time vs z goodfit',
-    'errenergygoodfit': 'energy err vs energy goodfit',
 }
 
 maintenance_runs = ['14713','14714','14715','15091']
@@ -144,6 +113,7 @@ for filename in glob.glob(options.dirname+"/"+"*.png"):
     #trigger type    
     if "goodfit" in plot_type:
         data['fit'] = 'good'
+        plot_type = plot_type.replace("goodfit","")
     else: data['fit'] = 'all'    
     
     trig_type = "Any trigger"

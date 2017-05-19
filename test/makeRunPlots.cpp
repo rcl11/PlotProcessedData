@@ -503,7 +503,7 @@ void CreateRunPlots( const std::vector<std::vector<std::string> >& files, bool n
             n_events++;
           }
         } else {
-          RAT::DU::DSReader dsReader( files[i] );
+          RAT::DU::DSReader dsReader( runfiles[subrun] );
           const RAT::DU::PMTInfo& pmtInfo = RAT::DU::Utility::Get()->GetPMTInfo();
           //Add data cleaning cut.
           ULong64_t rDataCleaningWord = RAT::GetDataCleaningWord( "analysis_mask" );
