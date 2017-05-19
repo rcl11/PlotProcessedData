@@ -189,6 +189,7 @@ void CreateRunPlots( const std::vector<std::vector<std::string> >& files, bool n
     TH1D htotalQ_N20 = plot_map["totalQ_N20"].GetHist(); 
     TH1D htotalQ_ESUMH = plot_map["totalQ_ESUMH"].GetHist(); 
     TH1D htotalQ_OWLEH = plot_map["totalQ_OWLEH"].GetHist(); 
+    //Fit related
     TH1D hfitValid = plot_map["fitValid"].GetHist(); 
     TH1D hitr = plot_map["itr"].GetHist(); 
     TH1D htime = plot_map["time"].GetHist(); 
@@ -221,13 +222,49 @@ void CreateRunPlots( const std::vector<std::vector<std::string> >& files, bool n
     TH1D hypmt = plot_map["ypmt"].GetHist(); 
     TH1D hzpmt = plot_map["zpmt"].GetHist(); 
     TH1D htpmt = plot_map["tpmt"].GetHist(); 
+    TH1D hbeta14 = plot_map["beta14"].GetHist(); 
+    TH1D henergy = plot_map["energy"].GetHist(); 
     TH2D hnhitsz = plot_map["nhitsz"].Get2DHist(); 
+    //Second copy of fit related for some good fit conditions
+    TH1D hitrgoodfit = plot_map["itrgoodfit"].GetHist(); 
+    TH1D htimegoodfit = plot_map["timegoodfit"].GetHist(); 
+    TH1D hposxgoodfit = plot_map["posxgoodfit"].GetHist(); 
+    TH1D hposygoodfit = plot_map["posygoodfit"].GetHist(); 
+    TH1D hposzgoodfit = plot_map["poszgoodfit"].GetHist(); 
+    TH1D hposRgoodfit = plot_map["posRgoodfit"].GetHist(); 
+    TH1D hposR3goodfit = plot_map["posR3goodfit"].GetHist(); 
+    TH2D hposxygoodfit = plot_map["posxygoodfit"].Get2DHist(); 
+    TH2D htimeposxgoodfit = plot_map["timeposxgoodfit"].Get2DHist(); 
+    TH2D htimeposygoodfit = plot_map["timeposygoodfit"].Get2DHist(); 
+    TH2D htimeposzgoodfit = plot_map["timeposzgoodfit"].Get2DHist(); 
+    TH2D herrposxgoodfit = plot_map["errposxgoodfit"].Get2DHist(); 
+    TH2D herrposygoodfit = plot_map["errposygoodfit"].Get2DHist(); 
+    TH2D herrposzgoodfit = plot_map["errposzgoodfit"].Get2DHist(); 
+    TH2D herrposxnhitsgoodfit = plot_map["errposxnhitsgoodfit"].Get2DHist(); 
+    TH2D herrposxitrgoodfit = plot_map["errposxitrgoodfit"].Get2DHist(); 
+    TH2D herrposynhitsgoodfit = plot_map["errposynhitsgoodfit"].Get2DHist(); 
+    TH2D herrposyitrgoodfit = plot_map["errposyitrgoodfit"].Get2DHist(); 
+    TH2D herrposznhitsgoodfit = plot_map["errposznhitsgoodfit"].Get2DHist(); 
+    TH2D herrposzitrgoodfit = plot_map["errposzitrgoodfit"].Get2DHist(); 
+    TH2D herrtimexgoodfit = plot_map["errtimexgoodfit"].Get2DHist(); 
+    TH2D herrtimeygoodfit = plot_map["errtimeygoodfit"].Get2DHist(); 
+    TH2D herrtimezgoodfit = plot_map["errtimezgoodfit"].Get2DHist(); 
+    TH2D herrenergygoodfit = plot_map["errenergygoodfit"].Get2DHist(); 
+    TH2D hposrhozgoodfit = plot_map["posrhozgoodfit"].Get2DHist(); 
+    TH2D hposRzgoodfit = plot_map["posRzgoodfit"].Get2DHist();
+    TH1D hrpmtgoodfit = plot_map["rpmtgoodfit"].GetHist(); 
+    TH1D hxpmtgoodfit = plot_map["xpmtgoodfit"].GetHist(); 
+    TH1D hypmtgoodfit = plot_map["ypmtgoodfit"].GetHist(); 
+    TH1D hzpmtgoodfit = plot_map["zpmtgoodfit"].GetHist(); 
+    TH1D htpmtgoodfit = plot_map["tpmtgoodfit"].GetHist(); 
+    TH1D hbeta14goodfit = plot_map["beta14goodfit"].GetHist(); 
+    TH1D henergygoodfit = plot_map["energygoodfit"].GetHist(); 
+    TH2D hnhitszgoodfit = plot_map["nhitszgoodfit"].Get2DHist(); 
+    
     TH2D hnhitstemp = plot_map["nhitstemp"].Get2DHist(); 
     TH1D hduration = plot_map["duration"].GetHist(); 
     TH1D htrigger = plot_map["trigger"].GetHist(); 
     TH1D hdataclean = plot_map["dataclean"].GetHist(); 
-    TH1D hbeta14 = plot_map["beta14"].GetHist(); 
-    TH1D henergy = plot_map["energy"].GetHist(); 
     TH1D htemp = plot_map["temp"].GetHist(); 
     
     for(unsigned h=0;h<trig_names.size();h++){
@@ -261,11 +298,15 @@ void CreateRunPlots( const std::vector<std::vector<std::string> >& files, bool n
           ULong64_t flag;
           ULong64_t applied_flag;
           Double_t posx, posy, posz;
+          Double_t posxPosError, posyPosError, poszPosError;
           bool fit_valid;
           Double_t itr;
           Int_t triggerWord;
           Double_t beta14;
           Double_t energy;
+          Double_t energyPosError;
+          Double_t time;
+          Double_t timePosError;
           Int_t uTDays, uTSecs, uTNSecs; 
           t1->SetBranchAddress("nhits",&nhits);
           t1->SetBranchAddress("q",&charge);
@@ -274,6 +315,9 @@ void CreateRunPlots( const std::vector<std::vector<std::string> >& files, bool n
           t1->SetBranchAddress("posx",&posx);
           t1->SetBranchAddress("posy",&posy);
           t1->SetBranchAddress("posz",&posz);
+          t1->SetBranchAddress("posxPosError",&posxPosError);
+          t1->SetBranchAddress("posyPosError",&posyPosError);
+          t1->SetBranchAddress("poszPosError",&poszPosError);
           t1->SetBranchAddress("fitValid",&fit_valid);
           t1->SetBranchAddress("triggerWord",&triggerWord);
           t1->SetBranchAddress("itr",&itr);
@@ -282,6 +326,9 @@ void CreateRunPlots( const std::vector<std::vector<std::string> >& files, bool n
           t1->SetBranchAddress("uTNSecs",&uTNSecs);
           t1->SetBranchAddress("beta14",&beta14);
           t1->SetBranchAddress("energy",&energy);
+          t1->SetBranchAddress("energyPosError",&energyPosError);
+          t1->SetBranchAddress("time",&time);
+          t1->SetBranchAddress("timePosError",&timePosError);
 
 
           Long64_t nentries = t1->GetEntries();
@@ -388,7 +435,54 @@ void CreateRunPlots( const std::vector<std::vector<std::string> >& files, bool n
                 hposR.Fill(R);
                 hposR3.Fill(pow(R,3)/pow(6005.3,3));
                 hposRz.Fill(R, posz);
-                hitr.Fill(itr); 
+                hitr.Fill(itr);
+                herrposx.Fill(posx,posxPosError);
+                herrposy.Fill(posy,posyPosError);
+                herrposz.Fill(posz,poszPosError);
+                herrposxnhits.Fill(nhits,posxPosError);
+                herrposxitr.Fill(itr,posxPosError);
+                herrposynhits.Fill(nhits,posyPosError);
+                herrposyitr.Fill(itr,posyPosError);
+                herrposznhits.Fill(nhits,poszPosError);
+                herrposzitr.Fill(itr,poszPosError);
+                herrtimex.Fill(posx,timePosError);
+                herrtimey.Fill(posy,timePosError);
+                herrtimez.Fill(posz,timePosError);
+                htime.Fill(time);
+                htimeposx.Fill(posx,time);
+                htimeposy.Fill(posy,time);
+                htimeposz.Fill(posz,time);
+                if(itr>0.55){
+                  hposrhozgoodfit.Fill(sqrt(posx*posx + posy*posy), posz);
+                  hposxgoodfit.Fill(posx);
+                  hposygoodfit.Fill(posy);
+                  hposzgoodfit.Fill(posz);
+                  hposxygoodfit.Fill(posx,posy);
+                  hnhitszgoodfit.Fill(nhits,posz);
+                  hbeta14goodfit.Fill(beta14);
+                  henergygoodfit.Fill(energy);
+                  double R = sqrt(posx*posx + posy*posy + posz*posz);
+                  hposRgoodfit.Fill(R);
+                  hposR3goodfit.Fill(pow(R,3)/pow(6005.3,3));
+                  hposRzgoodfit.Fill(R, posz);
+                  hitrgoodfit.Fill(itr);
+                  herrposxgoodfit.Fill(posx,posxPosError);
+                  herrposygoodfit.Fill(posy,posyPosError);
+                  herrposzgoodfit.Fill(posz,poszPosError);
+                  herrposxnhitsgoodfit.Fill(nhits,posxPosError);
+                  herrposxitrgoodfit.Fill(itr,posxPosError);
+                  herrposynhitsgoodfit.Fill(nhits,posyPosError);
+                  herrposyitrgoodfit.Fill(itr,posyPosError);
+                  herrposznhitsgoodfit.Fill(nhits,poszPosError);
+                  herrposzitrgoodfit.Fill(itr,poszPosError);
+                  herrtimexgoodfit.Fill(posx,timePosError);
+                  herrtimeygoodfit.Fill(posy,timePosError);
+                  herrtimezgoodfit.Fill(posz,timePosError);
+                  htimegoodfit.Fill(time);
+                  htimeposxgoodfit.Fill(posx,time);
+                  htimeposygoodfit.Fill(posy,time);
+                  htimeposzgoodfit.Fill(posz,time);
+                }
               }
               n_cleanevents++;
             }
@@ -487,68 +581,7 @@ void CreateRunPlots( const std::vector<std::vector<std::string> >& files, bool n
                 if(RAT::BitManip::TestBit(rEV.GetTrigType(), RAT::DU::TrigBits::Pedestal)){
                     htrigger.Fill("Pedestal", 1);
                 }
-                      
-                if(rEV.FitResultExists("waterFitter") && rEV.GetFitResult("waterFitter").GetValid()){
-                    RAT::DS::FitVertex rvertex = rEV.GetFitResult("waterFitter").GetVertex(0);
-                  if( rvertex.ContainsPosition() && rvertex.ValidPosition() ) {
-                    hfitValid.Fill(1.);
-                    if(rEV.GetClassifierResult("ITR:waterFitter").GetClassification("ITR") > 0.55){  
-                        double R = sqrt(rvertex.GetPosition().X()*rvertex.GetPosition().X()  + rvertex.GetPosition().Y()*rvertex.GetPosition().Y() + rvertex.GetPosition().Z()*rvertex.GetPosition().Z());
-                        //The below are all from fOptimiser inside PositionTimeLikelihood
-                        if(rvertex.ValidPositivePositionError()) {
-                          herrposx.Fill(rvertex.GetPosition().X(), rvertex.GetPositivePositionError().x());
-                          herrposy.Fill(rvertex.GetPosition().Y(), rvertex.GetPositivePositionError().y());
-                          herrposz.Fill(rvertex.GetPosition().Z(), rvertex.GetPositivePositionError().z());
-                          herrposxnhits.Fill(rEV.GetNhits(), rvertex.GetPositivePositionError().x());
-                          herrposxitr.Fill(rEV.GetClassifierResult("ITR:waterFitter").GetClassification("ITR"), rvertex.GetPositivePositionError().x());
-                          herrposynhits.Fill(rEV.GetNhits(), rvertex.GetPositivePositionError().y());
-                          herrposyitr.Fill(rEV.GetClassifierResult("ITR:waterFitter").GetClassification("ITR"), rvertex.GetPositivePositionError().y());
-                          herrposznhits.Fill(rEV.GetNhits(), rvertex.GetPositivePositionError().z());
-                          herrposzitr.Fill(rEV.GetClassifierResult("ITR:waterFitter").GetClassification("ITR"), rvertex.GetPositivePositionError().z());
-                        }
-                        if(rvertex.ValidPositiveTimeError()){
-                          herrtimex.Fill(rvertex.GetPosition().X(), rvertex.GetPositiveTimeError());
-                          herrtimey.Fill(rvertex.GetPosition().Y(), rvertex.GetPositiveTimeError());
-                          herrtimez.Fill(rvertex.GetPosition().Z(), rvertex.GetPositiveTimeError());
-                        }
-                        if(rvertex.ValidTime()){
-                          htime.Fill(rvertex.GetTime());
-                          htimeposx.Fill(rvertex.GetPosition().X(), rvertex.GetTime());
-                          htimeposy.Fill(rvertex.GetPosition().Y(), rvertex.GetTime());
-                          htimeposz.Fill(rvertex.GetPosition().Z(), rvertex.GetTime());
-                        }
-                        hposx.Fill(rvertex.GetPosition().X());
-                        hposy.Fill(rvertex.GetPosition().Y());
-                        hposz.Fill(rvertex.GetPosition().Z());
-                        hposxy.Fill(rvertex.GetPosition().X(),rvertex.GetPosition().Y());
-                        hnhitsz.Fill(rEV.GetNhits(),rvertex.GetPosition().Z());
-                        hposRz.Fill(R,rvertex.GetPosition().Z());
-                        hposrhoz.Fill(sqrt(rvertex.GetPosition().X()*rvertex.GetPosition().X() + rvertex.GetPosition().Y()*rvertex.GetPosition().Y()),rvertex.GetPosition().Z());
-                        hposR.Fill(R );
-                        hposR3.Fill(pow(R,3)/pow(6005.3,3));
-                        hitr.Fill(rEV.GetClassifierResult("ITR:waterFitter").GetClassification("ITR"));
-                        if(rvertex.ValidEnergy() && rvertex.ContainsEnergy()) {
-                            henergy.Fill(rvertex.GetEnergy());
-                            if(rvertex.ValidPositiveEnergyError()){
-                              //Seems to be just filled with 1s for EnergyPromptLookup
-                              herrenergy.Fill(rvertex.GetEnergy(), rvertex.GetPositiveEnergyError());
-                            }
-                        }
-                        if(rEV.GetClassifierResult( "isotropy:waterFitter" ).GetValid()) hbeta14.Fill(rEV.GetClassifierResult("isotropy:waterFitter").GetClassification("snobeta14"));
-                        RAT::DS::CalPMTs& calpmts = rEV.GetCalPMTs();
-                        for(unsigned int ipmt=0;ipmt<calpmts.GetCount();ipmt++){
-                          TVector3 pmtpos = pmtInfo.GetPosition(calpmts.GetPMT(ipmt).GetID());
-                          double pmt_r = pmtpos.Mag();
-                          hrpmt.Fill(pmt_r);
-                          hxpmt.Fill(pmtpos.X());
-                          hypmt.Fill(pmtpos.Y());
-                          hzpmt.Fill(pmtpos.Z());
-                          htpmt.Fill((calpmts.GetPMT(ipmt)).GetTime());
-                        }
-                      } 
-                  } else hfitValid.Fill(0.);
-                } else hfitValid.Fill(0.);
-                /*RAT::DS::CalPMTs& calpmts = rEV.GetCalPMTs();
+                RAT::DS::CalPMTs& calpmts = rEV.GetCalPMTs();
                 for(unsigned int ipmt=0;ipmt<calpmts.GetCount();ipmt++){
                   TVector3 pmtpos = pmtInfo.GetPosition(calpmts.GetPMT(ipmt).GetID());
                   double pmt_r = pmtpos.Mag();
@@ -557,7 +590,111 @@ void CreateRunPlots( const std::vector<std::vector<std::string> >& files, bool n
                   hypmt.Fill(pmtpos.Y());
                   hzpmt.Fill(pmtpos.Z());
                   htpmt.Fill((calpmts.GetPMT(ipmt)).GetTime());
-                }*/
+                }
+                      
+                if(rEV.FitResultExists("waterFitter") && rEV.GetFitResult("waterFitter").GetValid()){
+                    RAT::DS::FitVertex rvertex = rEV.GetFitResult("waterFitter").GetVertex(0);
+                  if( rvertex.ContainsPosition() && rvertex.ValidPosition() ) {
+                    hfitValid.Fill(1.);
+                    double R = sqrt(rvertex.GetPosition().X()*rvertex.GetPosition().X()  + rvertex.GetPosition().Y()*rvertex.GetPosition().Y() + rvertex.GetPosition().Z()*rvertex.GetPosition().Z());
+                    //The below are all from fOptimiser inside PositionTimeLikelihood
+                    if(rvertex.ValidPositivePositionError()) {
+                      herrposx.Fill(rvertex.GetPosition().X(), rvertex.GetPositivePositionError().x());
+                      herrposy.Fill(rvertex.GetPosition().Y(), rvertex.GetPositivePositionError().y());
+                      herrposz.Fill(rvertex.GetPosition().Z(), rvertex.GetPositivePositionError().z());
+                      herrposxnhits.Fill(rEV.GetNhits(), rvertex.GetPositivePositionError().x());
+                      herrposxitr.Fill(rEV.GetClassifierResult("ITR:waterFitter").GetClassification("ITR"), rvertex.GetPositivePositionError().x());
+                      herrposynhits.Fill(rEV.GetNhits(), rvertex.GetPositivePositionError().y());
+                      herrposyitr.Fill(rEV.GetClassifierResult("ITR:waterFitter").GetClassification("ITR"), rvertex.GetPositivePositionError().y());
+                      herrposznhits.Fill(rEV.GetNhits(), rvertex.GetPositivePositionError().z());
+                      herrposzitr.Fill(rEV.GetClassifierResult("ITR:waterFitter").GetClassification("ITR"), rvertex.GetPositivePositionError().z());
+                    }
+                    if(rvertex.ValidPositiveTimeError()){
+                      herrtimex.Fill(rvertex.GetPosition().X(), rvertex.GetPositiveTimeError());
+                      herrtimey.Fill(rvertex.GetPosition().Y(), rvertex.GetPositiveTimeError());
+                      herrtimez.Fill(rvertex.GetPosition().Z(), rvertex.GetPositiveTimeError());
+                    }
+                    if(rvertex.ValidTime()){
+                      htime.Fill(rvertex.GetTime());
+                      htimeposx.Fill(rvertex.GetPosition().X(), rvertex.GetTime());
+                      htimeposy.Fill(rvertex.GetPosition().Y(), rvertex.GetTime());
+                      htimeposz.Fill(rvertex.GetPosition().Z(), rvertex.GetTime());
+                    }
+                    hposx.Fill(rvertex.GetPosition().X());
+                    hposy.Fill(rvertex.GetPosition().Y());
+                    hposz.Fill(rvertex.GetPosition().Z());
+                    hposxy.Fill(rvertex.GetPosition().X(),rvertex.GetPosition().Y());
+                    hnhitsz.Fill(rEV.GetNhits(),rvertex.GetPosition().Z());
+                    hposRz.Fill(R,rvertex.GetPosition().Z());
+                    hposrhoz.Fill(sqrt(rvertex.GetPosition().X()*rvertex.GetPosition().X() + rvertex.GetPosition().Y()*rvertex.GetPosition().Y()),rvertex.GetPosition().Z());
+                    hposR.Fill(R );
+                    hposR3.Fill(pow(R,3)/pow(6005.3,3));
+                    hitr.Fill(rEV.GetClassifierResult("ITR:waterFitter").GetClassification("ITR"));
+                    if(rvertex.ValidEnergy() && rvertex.ContainsEnergy()) {
+                        henergy.Fill(rvertex.GetEnergy());
+                        if(rvertex.ValidPositiveEnergyError()){
+                          //Seems to be just filled with 1s for EnergyPromptLookup
+                          herrenergy.Fill(rvertex.GetEnergy(), rvertex.GetPositiveEnergyError());
+                        }
+                    }
+                    if(rEV.GetClassifierResult( "isotropy:waterFitter" ).GetValid()) hbeta14.Fill(rEV.GetClassifierResult("isotropy:waterFitter").GetClassification("snobeta14"));
+                    
+                    if(rEV.GetClassifierResult("ITR:waterFitter").GetClassification("ITR") > 0.55){  
+                        double R = sqrt(rvertex.GetPosition().X()*rvertex.GetPosition().X()  + rvertex.GetPosition().Y()*rvertex.GetPosition().Y() + rvertex.GetPosition().Z()*rvertex.GetPosition().Z());
+                        //The below are all from fOptimiser inside PositionTimeLikelihood
+                        if(rvertex.ValidPositivePositionError()) {
+                          herrposxgoodfit.Fill(rvertex.GetPosition().X(), rvertex.GetPositivePositionError().x());
+                          herrposygoodfit.Fill(rvertex.GetPosition().Y(), rvertex.GetPositivePositionError().y());
+                          herrposzgoodfit.Fill(rvertex.GetPosition().Z(), rvertex.GetPositivePositionError().z());
+                          herrposxnhitsgoodfit.Fill(rEV.GetNhits(), rvertex.GetPositivePositionError().x());
+                          herrposxitrgoodfit.Fill(rEV.GetClassifierResult("ITR:waterFitter").GetClassification("ITR"), rvertex.GetPositivePositionError().x());
+                          herrposynhitsgoodfit.Fill(rEV.GetNhits(), rvertex.GetPositivePositionError().y());
+                          herrposyitrgoodfit.Fill(rEV.GetClassifierResult("ITR:waterFitter").GetClassification("ITR"), rvertex.GetPositivePositionError().y());
+                          herrposznhitsgoodfit.Fill(rEV.GetNhits(), rvertex.GetPositivePositionError().z());
+                          herrposzitrgoodfit.Fill(rEV.GetClassifierResult("ITR:waterFitter").GetClassification("ITR"), rvertex.GetPositivePositionError().z());
+                        }
+                        if(rvertex.ValidPositiveTimeError()){
+                          herrtimexgoodfit.Fill(rvertex.GetPosition().X(), rvertex.GetPositiveTimeError());
+                          herrtimeygoodfit.Fill(rvertex.GetPosition().Y(), rvertex.GetPositiveTimeError());
+                          herrtimezgoodfit.Fill(rvertex.GetPosition().Z(), rvertex.GetPositiveTimeError());
+                        }
+                        if(rvertex.ValidTime()){
+                          htime.Fill(rvertex.GetTime());
+                          htimeposxgoodfit.Fill(rvertex.GetPosition().X(), rvertex.GetTime());
+                          htimeposygoodfit.Fill(rvertex.GetPosition().Y(), rvertex.GetTime());
+                          htimeposzgoodfit.Fill(rvertex.GetPosition().Z(), rvertex.GetTime());
+                        }
+                        hposxgoodfit.Fill(rvertex.GetPosition().X());
+                        hposygoodfit.Fill(rvertex.GetPosition().Y());
+                        hposzgoodfit.Fill(rvertex.GetPosition().Z());
+                        hposxygoodfit.Fill(rvertex.GetPosition().X(),rvertex.GetPosition().Y());
+                        hnhitszgoodfit.Fill(rEV.GetNhits(),rvertex.GetPosition().Z());
+                        hposRzgoodfit.Fill(R,rvertex.GetPosition().Z());
+                        hposrhozgoodfit.Fill(sqrt(rvertex.GetPosition().X()*rvertex.GetPosition().X() + rvertex.GetPosition().Y()*rvertex.GetPosition().Y()),rvertex.GetPosition().Z());
+                        hposRgoodfit.Fill(R );
+                        hposR3goodfit.Fill(pow(R,3)/pow(6005.3,3));
+                        hitrgoodfit.Fill(rEV.GetClassifierResult("ITR:waterFitter").GetClassification("ITR"));
+                        if(rvertex.ValidEnergy() && rvertex.ContainsEnergy()) {
+                            henergy.Fill(rvertex.GetEnergy());
+                            if(rvertex.ValidPositiveEnergyError()){
+                              //Seems to be just filled with 1s for EnergyPromptLookup
+                              herrenergygoodfit.Fill(rvertex.GetEnergy(), rvertex.GetPositiveEnergyError());
+                            }
+                        }
+                        if(rEV.GetClassifierResult( "isotropy:waterFitter" ).GetValid()) hbeta14goodfit.Fill(rEV.GetClassifierResult("isotropy:waterFitter").GetClassification("snobeta14"));
+                        RAT::DS::CalPMTs& calpmts = rEV.GetCalPMTs();
+                        for(unsigned int ipmt=0;ipmt<calpmts.GetCount();ipmt++){
+                          TVector3 pmtpos = pmtInfo.GetPosition(calpmts.GetPMT(ipmt).GetID());
+                          double pmt_r = pmtpos.Mag();
+                          hrpmtgoodfit.Fill(pmt_r);
+                          hxpmtgoodfit.Fill(pmtpos.X());
+                          hypmtgoodfit.Fill(pmtpos.Y());
+                          hzpmtgoodfit.Fill(pmtpos.Z());
+                          htpmtgoodfit.Fill((calpmts.GetPMT(ipmt)).GetTime());
+                        }
+                      } 
+                  } else hfitValid.Fill(0.);
+                } else hfitValid.Fill(0.);
               }
             }
           }
@@ -585,6 +722,7 @@ void CreateRunPlots( const std::vector<std::vector<std::string> >& files, bool n
     plot_map["totalQ_N20"].SetHist(htotalQ_N20);
     plot_map["totalQ_ESUMH"].SetHist(htotalQ_ESUMH);
     plot_map["totalQ_OWLEH"].SetHist(htotalQ_OWLEH);
+    
     plot_map["fitValid"].SetHist(hfitValid);
     plot_map["itr"].SetHist(hitr);
     plot_map["time"].SetHist(htime);
@@ -598,12 +736,8 @@ void CreateRunPlots( const std::vector<std::vector<std::string> >& files, bool n
     plot_map["ypmt"].SetHist(hypmt);
     plot_map["zpmt"].SetHist(hzpmt);
     plot_map["tpmt"].SetHist(htpmt);
-    plot_map["duration"].SetHist(hduration);
-    plot_map["trigger"].SetHist(htrigger);
-    plot_map["dataclean"].SetHist(hdataclean);
     plot_map["beta14"].SetHist(hbeta14);
     plot_map["energy"].SetHist(henergy);
-    plot_map["temp"].SetHist(htemp);
     plot_map["posxy"].Set2DHist(hposxy);
     plot_map["timeposx"].Set2DHist(htimeposx);
     plot_map["timeposy"].Set2DHist(htimeposy);
@@ -622,9 +756,49 @@ void CreateRunPlots( const std::vector<std::vector<std::string> >& files, bool n
     plot_map["errtimez"].Set2DHist(herrtimez);
     plot_map["errenergy"].Set2DHist(herrenergy);
     plot_map["nhitsz"].Set2DHist(hnhitsz);
-    plot_map["nhitstemp"].Set2DHist(hnhitstemp);
     plot_map["posrhoz"].Set2DHist(hposrhoz);
     plot_map["posRz"].Set2DHist(hposRz);
+    
+    plot_map["itrgoodfit"].SetHist(hitrgoodfit);
+    plot_map["timegoodfit"].SetHist(htimegoodfit);
+    plot_map["posxgoodfit"].SetHist(hposxgoodfit);
+    plot_map["posygoodfit"].SetHist(hposygoodfit);
+    plot_map["poszgoodfit"].SetHist(hposzgoodfit);
+    plot_map["posRgoodfit"].SetHist(hposRgoodfit);
+    plot_map["posR3goodfit"].SetHist(hposR3goodfit);
+    plot_map["rpmtgoodfit"].SetHist(hrpmtgoodfit);
+    plot_map["xpmtgoodfit"].SetHist(hxpmtgoodfit);
+    plot_map["ypmtgoodfit"].SetHist(hypmtgoodfit);
+    plot_map["zpmtgoodfit"].SetHist(hzpmtgoodfit);
+    plot_map["tpmtgoodfit"].SetHist(htpmtgoodfit);
+    plot_map["beta14goodfit"].SetHist(hbeta14goodfit);
+    plot_map["energygoodfit"].SetHist(henergygoodfit);
+    plot_map["posxygoodfit"].Set2DHist(hposxygoodfit);
+    plot_map["timeposxgoodfit"].Set2DHist(htimeposxgoodfit);
+    plot_map["timeposygoodfit"].Set2DHist(htimeposygoodfit);
+    plot_map["timeposzgoodfit"].Set2DHist(htimeposzgoodfit);
+    plot_map["errposxgoodfit"].Set2DHist(herrposxgoodfit);
+    plot_map["errposygoodfit"].Set2DHist(herrposygoodfit);
+    plot_map["errposzgoodfit"].Set2DHist(herrposzgoodfit);
+    plot_map["errposxnhitsgoodfit"].Set2DHist(herrposxnhitsgoodfit);
+    plot_map["errposxitrgoodfit"].Set2DHist(herrposxitrgoodfit);
+    plot_map["errposynhitsgoodfit"].Set2DHist(herrposynhitsgoodfit);
+    plot_map["errposyitrgoodfit"].Set2DHist(herrposyitrgoodfit);
+    plot_map["errposznhitsgoodfit"].Set2DHist(herrposznhitsgoodfit);
+    plot_map["errposzitrgoodfit"].Set2DHist(herrposzitrgoodfit);
+    plot_map["errtimexgoodfit"].Set2DHist(herrtimexgoodfit);
+    plot_map["errtimeygoodfit"].Set2DHist(herrtimeygoodfit);
+    plot_map["errtimezgoodfit"].Set2DHist(herrtimezgoodfit);
+    plot_map["errenergygoodfit"].Set2DHist(herrenergygoodfit);
+    plot_map["nhitszgoodfit"].Set2DHist(hnhitszgoodfit);
+    plot_map["posrhozgoodfit"].Set2DHist(hposrhozgoodfit);
+    plot_map["posRzgoodfit"].Set2DHist(hposRzgoodfit);
+    
+    plot_map["duration"].SetHist(hduration);
+    plot_map["trigger"].SetHist(htrigger);
+    plot_map["dataclean"].SetHist(hdataclean);
+    plot_map["temp"].SetHist(htemp);
+    plot_map["nhitstemp"].Set2DHist(hnhitstemp);
   
     //=============================================================================
     //Make some plots
@@ -916,7 +1090,7 @@ int main(int argc, char** argv){
   //What is this monstrosity
   std::vector<std::vector<std::vector<std::string> > > runvecs; 
   std::vector<std::vector<std::string> > runvec;
-  int exe_on = 5; 
+  int exe_on = 20; 
   int count = 0; 
   //Split up the filelists into 10 runs at a time in order to make manageable webpages
   std::map<std::string, std::vector<std::string> >::iterator it;
