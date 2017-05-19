@@ -85,7 +85,7 @@ class THPlot {
         void Set2DHist(TH2D const &h);
         std::string GetOutFilename() const;
         void SetOutFilename(std::string const &filename);
-        void SetRunInfo(std::pair<std::string,std::string> const &info);
+        void SetRunInfo(std::pair<std::vector<std::string>,std::vector<std::string> > const &info);
         std::string GetName() const;
 
 
@@ -109,7 +109,7 @@ class THPlot {
         TH1D hist_; 
         TH2D hist2D_; 
         std::string output_filename_;
-        std::pair<std::string,std::string> run_info_;
+        std::pair<std::vector<std::string>,std::vector<std::string> > run_info_;
 
 };
 

@@ -135,7 +135,7 @@ void THPlot::SetOutFilename(std::string const &filename){
     output_filename_ = filename;
 }
 
-void THPlot::SetRunInfo(std::pair<std::string,std::string> const &info){
+void THPlot::SetRunInfo(std::pair<std::vector<std::string>,std::vector<std::string> > const &info){
     run_info_ = info;
 }
 
@@ -161,7 +161,31 @@ int THPlot::GeneratePlot() {
     TLatex *title_latex = new TLatex();
     title_latex->SetNDC();
     title_latex->SetTextSize(0.04);
-    title_latex->DrawLatex(0.55, 0.94, ("Run: "+run_info_.first + " Subrun: " + run_info_.second).c_str() );
+    std::string runs="";
+    std::string subruns="";
+    if(run_info_.first.size() > 1){
+      subruns = "all";  
+      for(unsigned i=0; i<run_info_.first.size(); i++){
+        if(i==0) {
+            //remove preceding r and 0s, may need to allow extra digit one day!
+            runs.append(((run_info_.first)[i]).erase(0,5));
+            runs.append("-");
+        }
+        if(i==run_info_.first.size()-1) {
+            runs.append((run_info_.first)[i].erase(0,5));
+        }
+      }
+    } else {
+      runs = ((run_info_.first)[0]).erase(0,5);  
+      for(unsigned i=0; i<run_info_.second.size(); i++){
+         //remove preceding s and 0s, may need to allow extra digit one day!
+         subruns.append(((run_info_.second)[i]).erase(0,2));
+         if(i!=run_info_.second.size()-1) subruns.append(",");
+      }
+    }
+    double start_pos =0.5;
+    if(twoD_) start_pos=0.35;
+    title_latex->DrawLatex(start_pos, 0.94, ("Runs: "+ runs + " Subruns: " + subruns).c_str() );
     if(twoD_) c1->SetRightMargin(0.15);
     c1->Update();
     c1->SaveAs((output_filename_+".png").c_str());
