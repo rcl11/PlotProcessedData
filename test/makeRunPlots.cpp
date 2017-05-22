@@ -149,7 +149,6 @@ void CreateRunPlots( const std::vector<std::vector<std::string> >& files, bool n
   double end_run_time=0;
   std::string postfix = "";
   if(ntuple) postfix = "_ntuple";
-  double run_duration = 0;
   int file_count=0;
   TGraph * temphist = MakeCavityTempHist();
   std::map<std::string,THPlot::THPlot> plot_map_totals = ParseConfigs("config/","total");
@@ -172,6 +171,7 @@ void CreateRunPlots( const std::vector<std::vector<std::string> >& files, bool n
   std::vector<std::string> allruns;
   for(unsigned i=0; i<files.size(); ++i){
     std::cout << "Creating plots for run number " << i << std::endl;
+    double run_duration = 0;
       
     //Create a collection of histograms
     std::map<std::string,THPlot::THPlot> plot_map = ParseConfigs();
@@ -282,12 +282,6 @@ void CreateRunPlots( const std::vector<std::vector<std::string> >& files, bool n
     int n_cleanevents=0;
     int n_events=0;
     std::vector<std::string> runfiles = files[i];
-    int start_days = 0;
-    int start_secs = 0;
-    int start_nsecs = 0;
-    int end_days = 0;
-    int end_secs = 0;
-    int end_nsecs = 0;
           
     for(unsigned subrun=0; subrun<runfiles.size(); subrun++){ 
         std::cout << "Filling plots for subrun number " << subrun << std::endl;
@@ -312,6 +306,12 @@ void CreateRunPlots( const std::vector<std::vector<std::string> >& files, bool n
           Double_t energyPosError;
           Double_t time;
           Double_t timePosError;
+          int start_days = 0;
+          int start_secs = 0;
+          int start_nsecs = 0;
+          int end_days = 0;
+          int end_secs = 0;
+          int end_nsecs = 0;
           Int_t uTDays, uTSecs, uTNSecs; 
           t1->SetBranchAddress("nhits",&nhits);
           t1->SetBranchAddress("q",&charge);
@@ -342,12 +342,12 @@ void CreateRunPlots( const std::vector<std::vector<std::string> >& files, bool n
           Long64_t nentries = t1->GetEntries();
           for (Long64_t j=0;j<nentries;j++) {
             t1->GetEntry(j);
-            if(j==0 && subrun==0) {
+            if(j==0) {
               start_days = uTDays;
               start_secs = uTSecs;
               start_nsecs = uTNSecs;
             }
-            if(j==nentries-1 && subrun==runfiles.size()-1) {
+            if(j==nentries-1) {
               end_days = uTDays;
               end_secs = uTSecs;
               end_nsecs = uTNSecs;
@@ -502,8 +502,15 @@ void CreateRunPlots( const std::vector<std::vector<std::string> >& files, bool n
             }
             n_events++;
           }
+          run_duration += (end_days-start_days)*60*60*24 + (end_secs-start_secs) + ((end_nsecs-start_nsecs) * 1E-9);
         } else {
           RAT::DU::DSReader dsReader( runfiles[subrun] );
+          int start_days = 0;
+          int start_secs = 0;
+          int start_nsecs = 0;
+          int end_days = 0;
+          int end_secs = 0;
+          int end_nsecs = 0;
           const RAT::DU::PMTInfo& pmtInfo = RAT::DU::Utility::Get()->GetPMTInfo();
           //Add data cleaning cut.
           ULong64_t rDataCleaningWord = RAT::GetDataCleaningWord( "analysis_mask" );
@@ -515,12 +522,11 @@ void CreateRunPlots( const std::vector<std::vector<std::string> >& files, bool n
             for( size_t iEv = 0; iEv < rDS.GetEVCount(); iEv++ )
             {   
               RAT::DS::EV rEV = rDS.GetEV(iEv);
-              if(iEntry == 0 && iEv == 0 && subrun==0) start_time = rEV.GetUniversalTime();
-              if(iEntry == dsReader.GetEntryCount()-1 && iEv == rDS.GetEVCount()-1 && subrun==runfiles.size()-1 ) end_time = rEV.GetUniversalTime();
+              if(iEntry == 0 && iEv == 0 ) start_time = rEV.GetUniversalTime();
+              if(iEntry == dsReader.GetEntryCount()-1 && iEv == rDS.GetEVCount()-1) end_time = rEV.GetUniversalTime();
               double event_time_secs = ((rEV.GetUniversalTime()).GetDays())*60*60*24 + ((rEV.GetUniversalTime()).GetSeconds()) + ((rEV.GetUniversalTime()).GetNanoSeconds() * 1E-9);
-              if(iEntry == 0 && iEv == 0 && i == 0 && subrun==0) start_run_time = event_time_secs;
-              if(iEntry == dsReader.GetEntryCount()-1 && iEv == rDS.GetEVCount()-1 && i == files.size()-1 && subrun==runfiles.size()-1) end_run_time = event_time_secs;
-              const RAT::DS::Meta& rMeta = dsReader.GetMeta();
+              if(iEntry == 0 && iEv == 0 && i == 0 && subrun == 0) start_run_time = event_time_secs;
+              if(iEntry == dsReader.GetEntryCount()-1 && iEv == rDS.GetEVCount()-1 && i == files.size()-1 && subrun == runfiles.size()-1) end_run_time = event_time_secs;
               n_events++;
               //Below line may need changing with new PR fixing which pass this works for
               std::bitset<32> cleanbits = std::bitset<32> (rEV.GetDataCleaningFlags().GetFlags(0).GetULong64_t(0));
@@ -530,9 +536,7 @@ void CreateRunPlots( const std::vector<std::vector<std::string> >& files, bool n
               hdataclean.Fill("allevents",1);
               
               hNEvents_vs_time->Fill(event_time_secs/(60*60),1);
-              if(RAT::EventIsClean( rEV, rMeta, rDataCleaningWord )){
-              //Will need changing in next RAT release
-              //if(RAT::EventIsClean( rEV, rDataCleaningWord ))
+              if(RAT::EventIsClean( rEV, rDataCleaningWord )){
                 n_cleanevents++;
                 hnhits.Fill( rEV.GetNhits() );
                 hNCleanEvents_vs_time->Fill(event_time_secs/(60*60),1);
@@ -724,9 +728,9 @@ void CreateRunPlots( const std::vector<std::vector<std::string> >& files, bool n
           end_days = end_time.GetDays();
           end_secs = end_time.GetSeconds();
           end_nsecs = end_time.GetNanoSeconds();
+          run_duration += (end_days-start_days)*60*60*24 + (end_secs-start_secs) + ((end_nsecs-start_nsecs) * 1E-9);
         }
     }
-    run_duration = (end_days-start_days)*60*60*24 + (end_secs-start_secs) + ((end_nsecs-start_nsecs) * 1E-9);
     hduration.Fill(run_duration);
     plot_map["nhits"].SetHist(hnhits);
     plot_map["nhits_pulseGT"].SetHist(hnhits_pulseGT);
