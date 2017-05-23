@@ -50,6 +50,11 @@ std::pair<std::string, std::string> ParseRunInfo(const std::string filename){
   info.second = subrun_number;
   return info;
 }
+std::string ParseSampleInfo(const std::string filename){
+  std::string sample_info = filename;
+  sample_info = sample_info.erase(sample_info.find("_r"),sample_info.size()-1);
+  return sample_info;
+}
 
 //Create map to store all plots requested in config files and set style choices
 std::map<std::string,THPlot::THPlot> ParseConfigs(std::string config_dir="config/", std::string totals=""){
@@ -115,30 +120,30 @@ double GetCavityTemp(double time, TGraph* temphist){
     return temphist->Eval(time); 
 }
 
-void CreateRunPlots( const std::vector<std::vector<std::string> >& files, bool ntuple=true, std::string output_dir="plots/" )
+void CreateRunPlots( const std::vector<std::vector<std::string> >& files, bool ntuple=true, std::string output_dir="plots/", bool simulation=false)
 {
   SetStyle();
   TH1D* hnhits_vs_run = new TH1D( "hnhits_vs_run", "Mean number of hits per run", files.size(), 0.0, files.size() );
   hnhits_vs_run->Sumw2();
-  TH1D* hnhits_vs_time = new TH1D( "hnhits_vs_time", "Number of hits per 5 minutes", 3600, 64300, 64600 );
+  TH1D* hnhits_vs_time = new TH1D( "hnhits_vs_time", "Number of hits per 5 minutes", 8400, 64300, 65000 );
   hnhits_vs_time->Sumw2();
   TH1D* htotalQ_vs_run = new TH1D( "htotalQ_vs_run", "Mean total charge per run", files.size(), 0.0, files.size() );
   htotalQ_vs_run->Sumw2();
-  TH1D* htotalQ_vs_time = new TH1D( "htotalQ_vs_time", "Total charge per 5 minutes", 3600, 64300, 64600 );
+  TH1D* htotalQ_vs_time = new TH1D( "htotalQ_vs_time", "Total charge per 5 minutes", 8400, 64300, 65000 );
   htotalQ_vs_time->Sumw2();
   TH1D* hNEvents_vs_run = new TH1D( "hNEvents_vs_run", "Number of events per run", files.size(), 0.0, files.size() );
   hNEvents_vs_run->Sumw2();
-  TH1D* hNEvents_vs_time = new TH1D( "hNEvents_vs_rtime", "Number of events per 5 minutes",3600,64300,64600 );
+  TH1D* hNEvents_vs_time = new TH1D( "hNEvents_vs_rtime", "Number of events per 5 minutes",8400,64300,65000 );
   hNEvents_vs_time->Sumw2();
   TH1D* hNCleanEvents_vs_run = new TH1D( "hNCleanEvents_vs_run", "Number of clean events per run", files.size(), 0.0, files.size() );
   hNCleanEvents_vs_run->Sumw2();
-  TH1D* hNCleanEvents_vs_time = new TH1D( "hNCleanEvents_vs_time", "Number of clean events per 5 minutes",3600,64300,64600   );
+  TH1D* hNCleanEvents_vs_time = new TH1D( "hNCleanEvents_vs_time", "Number of clean events per 5 minutes",8400,64300,65000   );
   hNCleanEvents_vs_time->Sumw2();
   TH1D* hNCleanEventsnorm_vs_run = new TH1D( "hNCleanEventsnorm_vs_run", "Normalised number of clean events per run", files.size(), 0.0, files.size() );
   hNCleanEventsnorm_vs_run->Sumw2();
   TH1D* hFracCleanEvents_vs_run = new TH1D( "hFracCleanEvents_vs_run", "Fraction of clean events per run", files.size(), 0.0, files.size() );
   hFracCleanEvents_vs_run->Sumw2();
-  TH1D* hFracCleanEvents_vs_time = new TH1D( "hFracCleanEvents_vs_time", "Fraction of clean events per 5 minutes",3600,64300,64600  );
+  TH1D* hFracCleanEvents_vs_time = new TH1D( "hFracCleanEvents_vs_time", "Fraction of clean events per 5 minutes",8400,64300,65000  );
   hFracCleanEvents_vs_time->Sumw2();
   TH1D* hTemp_vs_run = new TH1D( "hTemp_vs_run", "Mean cavity temperature per run", files.size(), 0.0, files.size() );
   hTemp_vs_run->Sumw2();
@@ -149,6 +154,7 @@ void CreateRunPlots( const std::vector<std::vector<std::string> >& files, bool n
   double end_run_time=0;
   std::string postfix = "";
   if(ntuple) postfix = "_ntuple";
+  else postfix = "_ratds";
   int file_count=0;
   TGraph * temphist = MakeCavityTempHist();
   std::map<std::string,THPlot::THPlot> plot_map_totals = ParseConfigs("config/","total");
@@ -312,8 +318,10 @@ void CreateRunPlots( const std::vector<std::vector<std::string> >& files, bool n
           int end_days = 0;
           int end_secs = 0;
           int end_nsecs = 0;
+          int eventID;
           Int_t uTDays, uTSecs, uTNSecs; 
           t1->SetBranchAddress("nhits",&nhits);
+          t1->SetBranchAddress("eventID",&eventID);
           t1->SetBranchAddress("q",&charge);
           t1->SetBranchAddress("dcFlagged",&flag);
           t1->SetBranchAddress("dcApplied",&applied_flag);
@@ -366,7 +374,7 @@ void CreateRunPlots( const std::vector<std::vector<std::string> >& files, bool n
             }
             hdataclean.Fill("allevents",1);
             hNEvents_vs_time->Fill(event_time_secs/(60*60),1);
-            if(dataclean && compatibility_cut) {
+            if((dataclean && compatibility_cut) || simulation) {
               hNCleanEvents_vs_time->Fill(event_time_secs/(60*60),1);
               hnhits.Fill(nhits);
               double cavity_temp = GetCavityTemp(event_time_secs/(60*60), temphist);
@@ -536,7 +544,7 @@ void CreateRunPlots( const std::vector<std::vector<std::string> >& files, bool n
               hdataclean.Fill("allevents",1);
               
               hNEvents_vs_time->Fill(event_time_secs/(60*60),1);
-              if(RAT::EventIsClean( rEV, rDataCleaningWord )){
+              if(RAT::EventIsClean( rEV, rDataCleaningWord ) || simulation){
                 n_cleanevents++;
                 hnhits.Fill( rEV.GetNhits() );
                 hNCleanEvents_vs_time->Fill(event_time_secs/(60*60),1);
@@ -1086,8 +1094,10 @@ int main(int argc, char** argv){
    po::options_description desc("Options"); 
    std::string filelist;
    std::string directory = "plots/";
+   bool simulation = false;
    desc.add_options() 
     ("filelist", po::value<std::string>(&filelist)) 
+    ("simulation", po::value<bool>(&simulation)->default_value(false)) 
     ("directory", po::value<std::string>(&directory)->default_value("plots/"));
 
   po::variables_map vm;
@@ -1120,7 +1130,7 @@ int main(int argc, char** argv){
   std::vector<std::vector<std::string> > runvec;
   int exe_on = 20; 
   int count = 0; 
-  //Split up the filelists into 10 runs at a time in order to make manageable webpages
+  //Split up the filelists into 20 runs at a time in order to make manageable webpages
   std::map<std::string, std::vector<std::string> >::iterator it;
   for ( it = runmap.begin(); it != runmap.end(); it++ ){
       std::vector<std::string> subrun_vec = it->second;
@@ -1142,7 +1152,7 @@ int main(int argc, char** argv){
     fs::create_directory(directory.c_str());
     std::string dirname = directory+ss.str()+"/";
     fs::create_directory(dirname.c_str());
-    CreateRunPlots(runvecs[j],ntuple,dirname);
+    CreateRunPlots(runvecs[j],ntuple,dirname,simulation);
   }
 
 
