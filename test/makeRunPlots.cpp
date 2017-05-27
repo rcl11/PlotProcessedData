@@ -127,6 +127,22 @@ void CreateRunPlots( const std::vector<std::vector<std::string> >& files, bool n
   hnhits_vs_run->Sumw2();
   TH1D* hnhits_vs_time = new TH1D( "hnhits_vs_time", "Number of hits per 5 minutes", 8400, 64300, 65000 );
   hnhits_vs_time->Sumw2();
+  TH1D* hnhitsN100M_vs_run = new TH1D( "hnhitsN100M_vs_run", "Mean number of hits per run", files.size(), 0.0, files.size() );
+  hnhitsN100M_vs_run->Sumw2();
+  TH1D* hnhitsN100M_vs_time = new TH1D( "hnhitsN100M_vs_time", "Number of hits per 5 minutes", 8400, 64300, 65000 );
+  hnhitsN100M_vs_time->Sumw2();
+  TH1D* hnhitsN100H_vs_run = new TH1D( "hnhitsN100H_vs_run", "Mean number of hits per run", files.size(), 0.0, files.size() );
+  hnhitsN100H_vs_run->Sumw2();
+  TH1D* hnhitsN100H_vs_time = new TH1D( "hnhitsN100H_vs_time", "Number of hits per 5 minutes", 8400, 64300, 65000 );
+  hnhitsN100H_vs_time->Sumw2();
+  TH1D* hnhitsN20_vs_run = new TH1D( "hnhitsN20_vs_run", "Mean number of hits per run", files.size(), 0.0, files.size() );
+  hnhitsN20_vs_run->Sumw2();
+  TH1D* hnhitsN20_vs_time = new TH1D( "hnhitsN20_vs_time", "Number of hits per 5 minutes", 8400, 64300, 65000 );
+  hnhitsN20_vs_time->Sumw2();
+  TH1D* hnhitsESUMH_vs_run = new TH1D( "hnhitsESUMH_vs_run", "Mean number of hits per run", files.size(), 0.0, files.size() );
+  hnhitsESUMH_vs_run->Sumw2();
+  TH1D* hnhitsESUMH_vs_time = new TH1D( "hnhitsESUMH_vs_time", "Number of hits per 5 minutes", 8400, 64300, 65000 );
+  hnhitsESUMH_vs_time->Sumw2();
   TH1D* htotalQ_vs_run = new TH1D( "htotalQ_vs_run", "Mean total charge per run", files.size(), 0.0, files.size() );
   htotalQ_vs_run->Sumw2();
   TH1D* htotalQ_vs_time = new TH1D( "htotalQ_vs_time", "Total charge per 5 minutes", 8400, 64300, 65000 );
@@ -145,6 +161,20 @@ void CreateRunPlots( const std::vector<std::vector<std::string> >& files, bool n
   hFracCleanEvents_vs_run->Sumw2();
   TH1D* hFracCleanEvents_vs_time = new TH1D( "hFracCleanEvents_vs_time", "Fraction of clean events per 5 minutes",8400,64300,65000  );
   hFracCleanEvents_vs_time->Sumw2();
+  TH1D* hNEventsNHit15_vs_run = new TH1D( "hNEventsNHit15_vs_run", "Number of events per run", files.size(), 0.0, files.size() );
+  hNEventsNHit15_vs_run->Sumw2();
+  TH1D* hNEventsNHit15_vs_time = new TH1D( "hNEventsNHit15_vs_rtime", "Number of events per 5 minutes",8400,64300,65000 );
+  hNEventsNHit15_vs_time->Sumw2();
+  TH1D* hNCleanEventsNHit15_vs_run = new TH1D( "hNCleanEventsNHit15_vs_run", "Number of clean events per run", files.size(), 0.0, files.size() );
+  hNCleanEventsNHit15_vs_run->Sumw2();
+  TH1D* hNCleanEventsNHit15_vs_time = new TH1D( "hNCleanEventsNHit15_vs_time", "Number of clean events per 5 minutes",8400,64300,65000   );
+  hNCleanEventsNHit15_vs_time->Sumw2();
+  TH1D* hNCleanEventsNHit15norm_vs_run = new TH1D( "hNCleanEventsNHit15norm_vs_run", "Normalised number of clean events per run", files.size(), 0.0, files.size() );
+  hNCleanEventsNHit15norm_vs_run->Sumw2();
+  TH1D* hFracCleanEventsNHit15_vs_run = new TH1D( "hFracCleanEventsNHit15_vs_run", "Fraction of clean events per run", files.size(), 0.0, files.size() );
+  hFracCleanEventsNHit15_vs_run->Sumw2();
+  TH1D* hFracCleanEventsNHit15_vs_time = new TH1D( "hFracCleanEventsNHit15_vs_time", "Fraction of clean events per 5 minutes",8400,64300,65000  );
+  hFracCleanEventsNHit15_vs_time->Sumw2();
   TH1D* hTemp_vs_run = new TH1D( "hTemp_vs_run", "Mean cavity temperature per run", files.size(), 0.0, files.size() );
   hTemp_vs_run->Sumw2();
 
@@ -289,6 +319,8 @@ void CreateRunPlots( const std::vector<std::vector<std::string> >& files, bool n
   
     int n_cleanevents=0;
     int n_events=0;
+    int n_cleaneventsNHit15=0;
+    int n_eventsNHit15=0;
     std::vector<std::string> runfiles = files[i];
           
     for(unsigned subrun=0; subrun<runfiles.size(); subrun++){ 
@@ -376,8 +408,10 @@ void CreateRunPlots( const std::vector<std::vector<std::string> >& files, bool n
             }
             hdataclean.Fill("allevents",1);
             hNEvents_vs_time->Fill(event_time_secs/(60*60),1);
+            if(nhits>=15) hNEventsNHit15_vs_time->Fill(event_time_secs/(60*60),1);
             if((dataclean && compatibility_cut) || simulation) {
               hNCleanEvents_vs_time->Fill(event_time_secs/(60*60),1);
+              if(nhits>=15) hNCleanEventsNHit15_vs_time->Fill(event_time_secs/(60*60),1);
               hnhits.Fill(nhits);
               double cavity_temp = GetCavityTemp(event_time_secs/(60*60), temphist);
               hnhitstemp.Fill(nhits,cavity_temp);
@@ -400,16 +434,19 @@ void CreateRunPlots( const std::vector<std::vector<std::string> >& files, bool n
                 hnhits_N100M.Fill(nhits);
                 htotalQ_N100M.Fill(charge);
                 htrigger.Fill("N100M", 1);
+                hnhitsN100M_vs_time->Fill(event_time_secs/(60*60),nhits);
               }
               if(bits.test(2) && !bits.test(12)){
                 hnhits_N100H.Fill(nhits);
                 htotalQ_N100H.Fill(charge);
                 htrigger.Fill("N100H", 1);
+                hnhitsN100H_vs_time->Fill(event_time_secs/(60*60),nhits);
               }
               if(bits.test(3) && !bits.test(12)){
                 hnhits_N20.Fill(nhits);
                 htotalQ_N20.Fill(charge);
                 htrigger.Fill("N20", 1);
+                hnhitsN20_vs_time->Fill(event_time_secs/(60*60),nhits);
               }
               if(bits.test(4) && !bits.test(12)){
                 htrigger.Fill("N20LB", 1);
@@ -421,6 +458,7 @@ void CreateRunPlots( const std::vector<std::vector<std::string> >& files, bool n
                 hnhits_ESUMH.Fill(nhits);
                 htotalQ_ESUMH.Fill(charge);
                 htrigger.Fill("ESUMH", 1);
+                hnhitsESUMH_vs_time->Fill(event_time_secs/(60*60),nhits);
               }
               if(bits.test(7) && !bits.test(12)){
                 htrigger.Fill("OWLN", 1);
@@ -509,8 +547,10 @@ void CreateRunPlots( const std::vector<std::vector<std::string> >& files, bool n
                 }
               }
               n_cleanevents++;
+              if(nhits>=15) n_cleaneventsNHit15++;
             }
             n_events++;
+            if(nhits>=15) n_eventsNHit15++;
           }
           run_duration += (end_days-start_days)*60*60*24 + (end_secs-start_secs) + ((end_nsecs-start_nsecs) * 1E-9);
         } else {
@@ -538,6 +578,7 @@ void CreateRunPlots( const std::vector<std::vector<std::string> >& files, bool n
               if(iEntry == 0 && iEv == 0 && i == 0 && subrun == 0) start_run_time = event_time_secs;
               if(iEntry == dsReader.GetEntryCount()-1 && iEv == rDS.GetEVCount()-1 && i == files.size()-1 && subrun == runfiles.size()-1) end_run_time = event_time_secs;
               n_events++;
+              if(rEV.GetNhits()>=15) n_events++;
               //Below line may need changing with new PR fixing which pass this works for
               std::bitset<32> cleanbits = std::bitset<32> (rEV.GetDataCleaningFlags().GetFlags(0).GetULong64_t(0));
               for(unsigned g=0; g<dataclean_names.size(); g++){
@@ -546,10 +587,13 @@ void CreateRunPlots( const std::vector<std::vector<std::string> >& files, bool n
               hdataclean.Fill("allevents",1);
               
               hNEvents_vs_time->Fill(event_time_secs/(60*60),1);
+              if(rEV.GetNhits()>=15) hNEventsNHit15_vs_time->Fill(event_time_secs/(60*60),1);
               if(RAT::EventIsClean( rEV, rDataCleaningWord ) || simulation){
                 n_cleanevents++;
+                if(rEV.GetNhits()>=15) n_cleanevents++;
                 hnhits.Fill( rEV.GetNhits() );
                 hNCleanEvents_vs_time->Fill(event_time_secs/(60*60),1);
+                if(rEV.GetNhits()>=15) hNCleanEventsNHit15_vs_time->Fill(event_time_secs/(60*60),1);
                 hnhits_vs_time->Fill(event_time_secs/(60*60),rEV.GetNhits());
                 htotalQ.Fill( rEV.GetTotalCharge() );
                 htotalQ_vs_time->Fill(event_time_secs/(60*60),rEV.GetTotalCharge());
@@ -564,17 +608,20 @@ void CreateRunPlots( const std::vector<std::vector<std::string> >& files, bool n
                 if(RAT::BitManip::TestBit(rEV.GetTrigType(), RAT::DU::TrigBits::N100Med) && !RAT::BitManip::TestBit(rEV.GetTrigType(), RAT::DU::TrigBits::Pedestal)){
                     hnhits_N100M.Fill(rEV.GetNhits()); 
                     htotalQ_N100M.Fill( rEV.GetTotalCharge() );
+                    hnhitsN100M_vs_time->Fill(event_time_secs/(60*60),rEV.GetNhits());
                     htrigger.Fill("N100M", 1);
                 }
                 if(RAT::BitManip::TestBit(rEV.GetTrigType(), RAT::DU::TrigBits::N100High) && !RAT::BitManip::TestBit(rEV.GetTrigType(), RAT::DU::TrigBits::Pedestal)){
                     hnhits_N100H.Fill(rEV.GetNhits()); 
                     htotalQ_N100H.Fill( rEV.GetTotalCharge() );
                     htrigger.Fill("N100H", 1);
+                    hnhitsN100H_vs_time->Fill(event_time_secs/(60*60),rEV.GetNhits());
                 }
                 if(RAT::BitManip::TestBit(rEV.GetTrigType(), RAT::DU::TrigBits::N20) && !RAT::BitManip::TestBit(rEV.GetTrigType(), RAT::DU::TrigBits::Pedestal)){
                     hnhits_N20.Fill(rEV.GetNhits()); 
                     htotalQ_N20.Fill( rEV.GetTotalCharge() );
                     htrigger.Fill("N20", 1);
+                    hnhitsN20_vs_time->Fill(event_time_secs/(60*60),rEV.GetNhits());
                 }
                 if(RAT::BitManip::TestBit(rEV.GetTrigType(), RAT::DU::TrigBits::N20LB) && !RAT::BitManip::TestBit(rEV.GetTrigType(), RAT::DU::TrigBits::Pedestal)){
                     htrigger.Fill("N20LB", 1);
@@ -586,6 +633,7 @@ void CreateRunPlots( const std::vector<std::vector<std::string> >& files, bool n
                     hnhits_ESUMH.Fill(rEV.GetNhits()); 
                     htotalQ_ESUMH.Fill( rEV.GetTotalCharge() );
                     htrigger.Fill("ESUMH", 1);
+                    hnhitsESUMH_vs_time->Fill(event_time_secs/(60*60),rEV.GetNhits());
                 }
                 if(RAT::BitManip::TestBit(rEV.GetTrigType(), RAT::DU::TrigBits::OWLN) && !RAT::BitManip::TestBit(rEV.GetTrigType(), RAT::DU::TrigBits::Pedestal)){
                     htrigger.Fill("OWLN", 1);
@@ -886,6 +934,14 @@ void CreateRunPlots( const std::vector<std::vector<std::string> >& files, bool n
     //Code for the vs run plots. For now dont use the class for this
     hnhits_vs_run->Fill(file_count-1, hnhits.GetMean());
     hnhits_vs_run->SetBinError(file_count,hnhits.GetMeanError());
+    hnhitsN100M_vs_run->Fill(file_count-1, hnhits_N100M.GetMean());
+    hnhitsN100M_vs_run->SetBinError(file_count,hnhits_N100M.GetMeanError());
+    hnhitsN100H_vs_run->Fill(file_count-1, hnhits_N100H.GetMean());
+    hnhitsN100H_vs_run->SetBinError(file_count,hnhits_N100H.GetMeanError());
+    hnhitsN20_vs_run->Fill(file_count-1, hnhits_N20.GetMean());
+    hnhitsN20_vs_run->SetBinError(file_count,hnhits_N20.GetMeanError());
+    hnhitsESUMH_vs_run->Fill(file_count-1, hnhits_ESUMH.GetMean());
+    hnhitsESUMH_vs_run->SetBinError(file_count,hnhits_ESUMH.GetMeanError());
     std::string bin_label = run_info_subrun0.first;
     if(file_count==1) start_run = bin_label;
     end_run = bin_label;
@@ -905,6 +961,15 @@ void CreateRunPlots( const std::vector<std::vector<std::string> >& files, bool n
     hNCleanEventsnorm_vs_run->Fill(file_count-1, n_cleanevents/run_duration);
     hNCleanEventsnorm_vs_run->SetBinError(file_count,sqrt(n_cleanevents/run_duration));
     hNCleanEventsnorm_vs_run->GetXaxis()->SetBinLabel(file_count,bin_label.c_str());
+    hNCleanEventsNHit15_vs_run->Fill(file_count-1, n_cleaneventsNHit15);
+    hNCleanEventsNHit15_vs_run->SetBinError(file_count,sqrt(n_cleaneventsNHit15));
+    hNCleanEventsNHit15_vs_run->GetXaxis()->SetBinLabel(file_count,bin_label.c_str());
+    hNEventsNHit15_vs_run->Fill(file_count-1, n_eventsNHit15);
+    hNEventsNHit15_vs_run->SetBinError(file_count,sqrt(n_eventsNHit15));
+    hNEventsNHit15_vs_run->GetXaxis()->SetBinLabel(file_count,bin_label.c_str());
+    hNCleanEventsNHit15norm_vs_run->Fill(file_count-1, n_cleaneventsNHit15/run_duration);
+    hNCleanEventsNHit15norm_vs_run->SetBinError(file_count,sqrt(n_cleaneventsNHit15/run_duration));
+    hNCleanEventsNHit15norm_vs_run->GetXaxis()->SetBinLabel(file_count,bin_label.c_str());
     //delete f;
   }
   
@@ -949,6 +1014,110 @@ void CreateRunPlots( const std::vector<std::vector<std::string> >& files, bool n
   c100->Update();
   c100->SaveAs((output_dir+"nhits_vs_time_"+start_run+"_to_"+end_run+postfix+".png").c_str());
   c100->SaveAs((output_dir+"nhits_vs_time_"+start_run+"_to_"+end_run+postfix+".pdf").c_str());
+  
+  hnhitsN100M_vs_run->SetMarkerColor(TColor::GetColor(220, 24, 24));
+  hnhitsN100M_vs_run->SetMarkerStyle(20);
+  hnhitsN100M_vs_run->SetLineColor(TColor::GetColor(220, 24, 24));
+  hnhitsN100M_vs_run->GetYaxis()->SetTitle( "Mean #Hits N100M" );
+  hnhitsN100M_vs_run->GetXaxis()->SetTitle( "Run ID" );
+  //Necessary rescale of axis to get rid of empty bins where we didnt fill because the run wasn't good
+  hnhitsN100M_vs_run->GetXaxis()->SetRangeUser(0,file_count);
+  hnhitsN100M_vs_run->GetYaxis()->SetTitleOffset(0.8);
+  hnhitsN100M_vs_run->Draw("PE1");
+  hnhitsN100M_vs_run->SetMinimum(0);
+  c100->Update();
+  c100->SaveAs((output_dir+"nhitsN100M_vs_run_"+start_run+"_to_"+end_run+postfix+".png").c_str());
+  c100->SaveAs((output_dir+"nhitsN100M_vs_run_"+start_run+"_to_"+end_run+postfix+".pdf").c_str());
+  
+  hnhitsN100M_vs_time->SetMarkerColor(TColor::GetColor(220, 24, 24));
+  hnhitsN100M_vs_time->SetMarkerStyle(20);
+  hnhitsN100M_vs_time->SetLineColor(TColor::GetColor(220, 24, 24));
+  hnhitsN100M_vs_time->GetYaxis()->SetTitle( "Nhits N100M/5 minutes" );
+  hnhitsN100M_vs_time->GetXaxis()->SetTitle( "Time (hours)" );
+  hnhitsN100M_vs_time->GetXaxis()->SetRangeUser(start_run_time/(60*60),end_run_time/(60*60));
+  hnhitsN100M_vs_time->GetYaxis()->SetTitleOffset(0.8);
+  hnhitsN100M_vs_time->Draw("PE1");
+  c100->Update();
+  c100->SaveAs((output_dir+"nhitsN100M_vs_time_"+start_run+"_to_"+end_run+postfix+".png").c_str());
+  c100->SaveAs((output_dir+"nhitsN100M_vs_time_"+start_run+"_to_"+end_run+postfix+".pdf").c_str());
+  
+  hnhitsN100H_vs_run->SetMarkerColor(TColor::GetColor(220, 24, 24));
+  hnhitsN100H_vs_run->SetMarkerStyle(20);
+  hnhitsN100H_vs_run->SetLineColor(TColor::GetColor(220, 24, 24));
+  hnhitsN100H_vs_run->GetYaxis()->SetTitle( "Mean #Hits N100H" );
+  hnhitsN100H_vs_run->GetXaxis()->SetTitle( "Run ID" );
+  //Necessary rescale of axis to get rid of empty bins where we didnt fill because the run wasn't good
+  hnhitsN100H_vs_run->GetXaxis()->SetRangeUser(0,file_count);
+  hnhitsN100H_vs_run->GetYaxis()->SetTitleOffset(0.8);
+  hnhitsN100H_vs_run->Draw("PE1");
+  hnhitsN100H_vs_run->SetMinimum(0);
+  c100->Update();
+  c100->SaveAs((output_dir+"nhitsN100H_vs_run_"+start_run+"_to_"+end_run+postfix+".png").c_str());
+  c100->SaveAs((output_dir+"nhitsN100H_vs_run_"+start_run+"_to_"+end_run+postfix+".pdf").c_str());
+  
+  hnhitsN100H_vs_time->SetMarkerColor(TColor::GetColor(220, 24, 24));
+  hnhitsN100H_vs_time->SetMarkerStyle(20);
+  hnhitsN100H_vs_time->SetLineColor(TColor::GetColor(220, 24, 24));
+  hnhitsN100H_vs_time->GetYaxis()->SetTitle( "Nhits N100H/5 minutes" );
+  hnhitsN100H_vs_time->GetXaxis()->SetTitle( "Time (hours)" );
+  hnhitsN100H_vs_time->GetXaxis()->SetRangeUser(start_run_time/(60*60),end_run_time/(60*60));
+  hnhitsN100H_vs_time->GetYaxis()->SetTitleOffset(0.8);
+  hnhitsN100H_vs_time->Draw("PE1");
+  c100->Update();
+  c100->SaveAs((output_dir+"nhitsN100H_vs_time_"+start_run+"_to_"+end_run+postfix+".png").c_str());
+  c100->SaveAs((output_dir+"nhitsN100H_vs_time_"+start_run+"_to_"+end_run+postfix+".pdf").c_str());
+  
+  hnhitsN20_vs_run->SetMarkerColor(TColor::GetColor(220, 24, 24));
+  hnhitsN20_vs_run->SetMarkerStyle(20);
+  hnhitsN20_vs_run->SetLineColor(TColor::GetColor(220, 24, 24));
+  hnhitsN20_vs_run->GetYaxis()->SetTitle( "Mean #Hits N20" );
+  hnhitsN20_vs_run->GetXaxis()->SetTitle( "Run ID" );
+  //Necessary rescale of axis to get rid of empty bins where we didnt fill because the run wasn't good
+  hnhitsN20_vs_run->GetXaxis()->SetRangeUser(0,file_count);
+  hnhitsN20_vs_run->GetYaxis()->SetTitleOffset(0.8);
+  hnhitsN20_vs_run->Draw("PE1");
+  hnhitsN20_vs_run->SetMinimum(0);
+  c100->Update();
+  c100->SaveAs((output_dir+"nhitsN20_vs_run_"+start_run+"_to_"+end_run+postfix+".png").c_str());
+  c100->SaveAs((output_dir+"nhitsN20_vs_run_"+start_run+"_to_"+end_run+postfix+".pdf").c_str());
+  
+  hnhitsN20_vs_time->SetMarkerColor(TColor::GetColor(220, 24, 24));
+  hnhitsN20_vs_time->SetMarkerStyle(20);
+  hnhitsN20_vs_time->SetLineColor(TColor::GetColor(220, 24, 24));
+  hnhitsN20_vs_time->GetYaxis()->SetTitle( "Nhits N20/5 minutes" );
+  hnhitsN20_vs_time->GetXaxis()->SetTitle( "Time (hours)" );
+  hnhitsN20_vs_time->GetXaxis()->SetRangeUser(start_run_time/(60*60),end_run_time/(60*60));
+  hnhitsN20_vs_time->GetYaxis()->SetTitleOffset(0.8);
+  hnhitsN20_vs_time->Draw("PE1");
+  c100->Update();
+  c100->SaveAs((output_dir+"nhitsN20_vs_time_"+start_run+"_to_"+end_run+postfix+".png").c_str());
+  c100->SaveAs((output_dir+"nhitsN20_vs_time_"+start_run+"_to_"+end_run+postfix+".pdf").c_str());
+  
+  hnhitsESUMH_vs_run->SetMarkerColor(TColor::GetColor(220, 24, 24));
+  hnhitsESUMH_vs_run->SetMarkerStyle(20);
+  hnhitsESUMH_vs_run->SetLineColor(TColor::GetColor(220, 24, 24));
+  hnhitsESUMH_vs_run->GetYaxis()->SetTitle( "Mean #Hits ESUMH" );
+  hnhitsESUMH_vs_run->GetXaxis()->SetTitle( "Run ID" );
+  //Necessary rescale of axis to get rid of empty bins where we didnt fill because the run wasn't good
+  hnhitsESUMH_vs_run->GetXaxis()->SetRangeUser(0,file_count);
+  hnhitsESUMH_vs_run->GetYaxis()->SetTitleOffset(0.8);
+  hnhitsESUMH_vs_run->Draw("PE1");
+  hnhitsESUMH_vs_run->SetMinimum(0);
+  c100->Update();
+  c100->SaveAs((output_dir+"nhitsESUMH_vs_run_"+start_run+"_to_"+end_run+postfix+".png").c_str());
+  c100->SaveAs((output_dir+"nhitsESUMH_vs_run_"+start_run+"_to_"+end_run+postfix+".pdf").c_str());
+  
+  hnhitsESUMH_vs_time->SetMarkerColor(TColor::GetColor(220, 24, 24));
+  hnhitsESUMH_vs_time->SetMarkerStyle(20);
+  hnhitsESUMH_vs_time->SetLineColor(TColor::GetColor(220, 24, 24));
+  hnhitsESUMH_vs_time->GetYaxis()->SetTitle( "Nhits ESUMH/5 minutes" );
+  hnhitsESUMH_vs_time->GetXaxis()->SetTitle( "Time (hours)" );
+  hnhitsESUMH_vs_time->GetXaxis()->SetRangeUser(start_run_time/(60*60),end_run_time/(60*60));
+  hnhitsESUMH_vs_time->GetYaxis()->SetTitleOffset(0.8);
+  hnhitsESUMH_vs_time->Draw("PE1");
+  c100->Update();
+  c100->SaveAs((output_dir+"nhitsESUMH_vs_time_"+start_run+"_to_"+end_run+postfix+".png").c_str());
+  c100->SaveAs((output_dir+"nhitsESUMH_vs_time_"+start_run+"_to_"+end_run+postfix+".pdf").c_str());
   
   hTemp_vs_run->SetMarkerColor(TColor::GetColor(250, 155, 107));
   hTemp_vs_run->SetMarkerStyle(20);
@@ -1080,6 +1249,98 @@ void CreateRunPlots( const std::vector<std::vector<std::string> >& files, bool n
   c100->SaveAs((output_dir+"fraccleanevents_vs_time_"+start_run+"_to_"+end_run+postfix+".png").c_str());
   c100->SaveAs((output_dir+"fraccleanevents_vs_time_"+start_run+"_to_"+end_run+postfix+".pdf").c_str());
   
+  hNCleanEventsNHit15_vs_run->SetMarkerColor(kGreen);
+  hNCleanEventsNHit15_vs_run->SetMarkerStyle(20);
+  hNCleanEventsNHit15_vs_run->SetLineColor(kGreen);
+  hNCleanEventsNHit15_vs_run->GetYaxis()->SetTitle( "# Clean EventsNHit15" );
+  hNCleanEventsNHit15_vs_run->GetXaxis()->SetTitle( "Run ID" );
+  hNCleanEventsNHit15_vs_run->GetXaxis()->SetRangeUser(0,file_count);
+  hNCleanEventsNHit15_vs_run->SetMinimum(0);
+  hNCleanEventsNHit15_vs_run->GetYaxis()->SetTitleOffset(0.8);
+  hNCleanEventsNHit15_vs_run->Draw("PE1");
+  c100->Update();
+  c100->SaveAs((output_dir+"ncleaneventsNHit15_vs_run_"+start_run+"_to_"+end_run+postfix+".png").c_str());
+  c100->SaveAs((output_dir+"ncleaneventsNHit15_vs_run_"+start_run+"_to_"+end_run+postfix+".pdf").c_str());
+  
+  hNEventsNHit15_vs_run->SetMarkerColor(kGreen);
+  hNEventsNHit15_vs_run->SetMarkerStyle(20);
+  hNEventsNHit15_vs_run->SetLineColor(kGreen);
+  hNEventsNHit15_vs_run->GetYaxis()->SetTitle( "# EventsNHit15" );
+  hNEventsNHit15_vs_run->GetXaxis()->SetTitle( "Run ID" );
+  hNEventsNHit15_vs_run->GetXaxis()->SetRangeUser(0,file_count);
+  hNEventsNHit15_vs_run->GetYaxis()->SetTitleOffset(0.8);
+  hNEventsNHit15_vs_run->SetMinimum(0);
+  hNEventsNHit15_vs_run->Draw("PE1");
+  c100->Update();
+  c100->SaveAs((output_dir+"neventsNHit15_vs_run_"+start_run+"_to_"+end_run+postfix+".png").c_str());
+  c100->SaveAs((output_dir+"neventsNHit15_vs_run_"+start_run+"_to_"+end_run+postfix+".pdf").c_str());
+  
+  hNCleanEventsNHit15_vs_time->SetMarkerColor(kGreen+3);
+  hNCleanEventsNHit15_vs_time->SetMarkerStyle(20);
+  hNCleanEventsNHit15_vs_time->SetLineColor(kGreen+3);
+  hNCleanEventsNHit15_vs_time->GetYaxis()->SetTitle( "# Clean EventsNHit15/5 minutes" );
+  hNCleanEventsNHit15_vs_time->GetXaxis()->SetTitle( "Time (hours)" );
+  hNCleanEventsNHit15_vs_time->GetXaxis()->SetRangeUser(start_run_time/(60*60),end_run_time/(60*60));
+  hNCleanEventsNHit15_vs_time->GetYaxis()->SetTitleOffset(0.8);
+  hNCleanEventsNHit15_vs_time->Draw("PE1");
+  c100->Update();
+  c100->SaveAs((output_dir+"ncleaneventsNHit15_vs_time_"+start_run+"_to_"+end_run+postfix+".png").c_str());
+  c100->SaveAs((output_dir+"ncleaneventsNHit15_vs_time_"+start_run+"_to_"+end_run+postfix+".pdf").c_str());
+  
+  hNEventsNHit15_vs_time->SetMarkerColor(kGreen);
+  hNEventsNHit15_vs_time->SetMarkerStyle(20);
+  hNEventsNHit15_vs_time->SetLineColor(kGreen);
+  hNEventsNHit15_vs_time->GetYaxis()->SetTitle( "# EventsNHit15/5 minutes" );
+  hNEventsNHit15_vs_time->GetXaxis()->SetTitle( "Time (hours)" );
+  hNEventsNHit15_vs_time->GetXaxis()->SetRangeUser(start_run_time/(60*60),end_run_time/(60*60));
+  hNEventsNHit15_vs_time->GetYaxis()->SetTitleOffset(0.8);
+  hNEventsNHit15_vs_time->Draw("PE1");
+  c100->Update();
+  c100->SaveAs((output_dir+"neventsNHit15_vs_time_"+start_run+"_to_"+end_run+postfix+".png").c_str());
+  c100->SaveAs((output_dir+"neventsNHit15_vs_time_"+start_run+"_to_"+end_run+postfix+".pdf").c_str());
+  
+  hNCleanEventsNHit15norm_vs_run->SetMarkerColor(kGreen+3);
+  hNCleanEventsNHit15norm_vs_run->SetMarkerStyle(20);
+  hNCleanEventsNHit15norm_vs_run->SetLineColor(kGreen+3);
+  hNCleanEventsNHit15norm_vs_run->GetYaxis()->SetTitle( "# Clean eventsNHit15 per second" );
+  hNCleanEventsNHit15norm_vs_run->GetXaxis()->SetTitle( "Run ID" );
+  hNCleanEventsNHit15norm_vs_run->GetYaxis()->SetTitleOffset(0.8);
+  hNCleanEventsNHit15norm_vs_run->GetXaxis()->SetRangeUser(0,file_count);
+  hNCleanEventsNHit15norm_vs_run->SetMinimum(0);
+  hNCleanEventsNHit15norm_vs_run->Draw("PE1");
+  c100->Update();
+  c100->SaveAs((output_dir+"ncleaneventsNHit15norm_vs_run_"+start_run+"_to_"+end_run+postfix+".png").c_str());
+  c100->SaveAs((output_dir+"ncleaneventsNHit15norm_vs_run_"+start_run+"_to_"+end_run+postfix+".pdf").c_str());
+  
+  hFracCleanEventsNHit15_vs_run = (TH1D*)hNCleanEventsNHit15_vs_run->Clone("hFracCleanEventsNHit15_vs_run");
+  hFracCleanEventsNHit15_vs_run->Divide(hNEventsNHit15_vs_run);
+  hFracCleanEventsNHit15_vs_run->SetMarkerColor(kMagenta);
+  hFracCleanEventsNHit15_vs_run->SetMarkerStyle(20);
+  hFracCleanEventsNHit15_vs_run->SetLineColor(kMagenta);
+  hFracCleanEventsNHit15_vs_run->GetYaxis()->SetTitle( "Fraction of clean EventsNHit15" );
+  hFracCleanEventsNHit15_vs_run->GetXaxis()->SetTitle( "Run ID" );
+  hFracCleanEventsNHit15_vs_run->GetXaxis()->SetRangeUser(0,file_count);
+  hFracCleanEventsNHit15_vs_run->GetYaxis()->SetTitleOffset(0.8);
+  hFracCleanEventsNHit15_vs_run->SetMinimum(0);
+  hFracCleanEventsNHit15_vs_run->Draw("PE1");
+  c100->Update();
+  c100->SaveAs((output_dir+"fraccleaneventsNHit15_vs_run_"+start_run+"_to_"+end_run+postfix+".png").c_str());
+  c100->SaveAs((output_dir+"fraccleaneventsNHit15_vs_run_"+start_run+"_to_"+end_run+postfix+".pdf").c_str());
+  
+  hFracCleanEventsNHit15_vs_time = (TH1D*)hNCleanEventsNHit15_vs_time->Clone("hFracCleanEventsNHit15_vs_time");
+  hFracCleanEventsNHit15_vs_time->Divide(hNEventsNHit15_vs_time);
+  hFracCleanEventsNHit15_vs_time->SetMarkerColor(kMagenta);
+  hFracCleanEventsNHit15_vs_time->SetMarkerStyle(20);
+  hFracCleanEventsNHit15_vs_time->SetLineColor(kMagenta);
+  hFracCleanEventsNHit15_vs_time->GetYaxis()->SetTitle( "Fraction of clean EventsNHit15/5 minutes" );
+  hFracCleanEventsNHit15_vs_time->GetXaxis()->SetTitle( "Time (hours)" );
+  hFracCleanEventsNHit15_vs_time->GetXaxis()->SetRangeUser(start_run_time/(60*60),end_run_time/(60*60));
+  hFracCleanEventsNHit15_vs_time->GetYaxis()->SetTitleOffset(0.8);
+  hFracCleanEventsNHit15_vs_time->Draw("PE1");
+  c100->Update();
+  c100->SaveAs((output_dir+"fraccleaneventsNHit15_vs_time_"+start_run+"_to_"+end_run+postfix+".png").c_str());
+  c100->SaveAs((output_dir+"fraccleaneventsNHit15_vs_time_"+start_run+"_to_"+end_run+postfix+".pdf").c_str());
+  
   delete c100;
   delete hnhits_vs_run;
   delete hnhits_vs_time;
@@ -1092,6 +1353,13 @@ void CreateRunPlots( const std::vector<std::vector<std::string> >& files, bool n
   delete hFracCleanEvents_vs_run;
   delete hFracCleanEvents_vs_time;
   delete hNCleanEventsnorm_vs_run;
+  delete hNEventsNHit15_vs_run;
+  delete hNEventsNHit15_vs_time;
+  delete hNCleanEventsNHit15_vs_run;
+  delete hNCleanEventsNHit15_vs_time;
+  delete hFracCleanEventsNHit15_vs_run;
+  delete hFracCleanEventsNHit15_vs_time;
+  delete hNCleanEventsNHit15norm_vs_run;
  
 }
 
