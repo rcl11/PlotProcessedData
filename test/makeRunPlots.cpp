@@ -230,6 +230,7 @@ void CreateRunPlots( const std::vector<std::vector<std::string> >& files, bool n
     TH1D hypmt = plot_map["ypmt"].GetHist(); 
     TH1D hzpmt = plot_map["zpmt"].GetHist(); 
     TH1D htpmt = plot_map["tpmt"].GetHist(); 
+    TH1D hipmt = plot_map["ipmt"].GetHist(); 
     TH1D hbeta14 = plot_map["beta14"].GetHist(); 
     TH1D henergy = plot_map["energy"].GetHist(); 
     TH2D hnhitsz = plot_map["nhitsz"].Get2DHist(); 
@@ -264,6 +265,7 @@ void CreateRunPlots( const std::vector<std::vector<std::string> >& files, bool n
     TH2D hposRzgoodfit = plot_map["posRzgoodfit"].Get2DHist();
     TH1D hrpmtgoodfit = plot_map["rpmtgoodfit"].GetHist(); 
     TH1D hxpmtgoodfit = plot_map["xpmtgoodfit"].GetHist(); 
+    TH1D hipmtgoodfit = plot_map["ipmtgoodfit"].GetHist(); 
     TH1D hypmtgoodfit = plot_map["ypmtgoodfit"].GetHist(); 
     TH1D hzpmtgoodfit = plot_map["zpmtgoodfit"].GetHist(); 
     TH1D htpmtgoodfit = plot_map["tpmtgoodfit"].GetHist(); 
@@ -391,42 +393,42 @@ void CreateRunPlots( const std::vector<std::vector<std::string> >& files, bool n
                 htotalQ_pulseGT.Fill(charge);
                 htrigger.Fill("PULGT", 1);
               }
-              if(bits.test(0)){
+              if(bits.test(0) && !bits.test(12)){
                 htrigger.Fill("N100L", 1);
               }
-              if(bits.test(1)){
+              if(bits.test(1) && !bits.test(12)){
                 hnhits_N100M.Fill(nhits);
                 htotalQ_N100M.Fill(charge);
                 htrigger.Fill("N100M", 1);
               }
-              if(bits.test(2)){
+              if(bits.test(2) && !bits.test(12)){
                 hnhits_N100H.Fill(nhits);
                 htotalQ_N100H.Fill(charge);
                 htrigger.Fill("N100H", 1);
               }
-              if(bits.test(3)){
+              if(bits.test(3) && !bits.test(12)){
                 hnhits_N20.Fill(nhits);
                 htotalQ_N20.Fill(charge);
                 htrigger.Fill("N20", 1);
               }
-              if(bits.test(4)){
+              if(bits.test(4) && !bits.test(12)){
                 htrigger.Fill("N20LB", 1);
               }
-              if(bits.test(5)){
+              if(bits.test(5) && !bits.test(12)){
                 htrigger.Fill("ESUML", 1);
               }
-              if(bits.test(6)){
+              if(bits.test(6) && !bits.test(12)){
                 hnhits_ESUMH.Fill(nhits);
                 htotalQ_ESUMH.Fill(charge);
                 htrigger.Fill("ESUMH", 1);
               }
-              if(bits.test(7)){
+              if(bits.test(7) && !bits.test(12)){
                 htrigger.Fill("OWLN", 1);
               }
-              if(bits.test(8)){
+              if(bits.test(8) && !bits.test(12)){
                 htrigger.Fill("OWLEL", 1);
               }
-              if(bits.test(9)){
+              if(bits.test(9) && !bits.test(12)){
                 hnhits_OWLEH.Fill(nhits);
                 htotalQ_OWLEH.Fill(charge);
                 htrigger.Fill("OWLEH", 1);
@@ -556,42 +558,42 @@ void CreateRunPlots( const std::vector<std::vector<std::string> >& files, bool n
                 htemp.Fill(cavity_temp);
                 //Fill some nhits and total q plots for different triggers fired
                 //std::cout << std::bitset<32>(rEV.GetTrigType())/*.to_string()*/ << std::endl;
-                if(RAT::BitManip::TestBit(rEV.GetTrigType(), RAT::DU::TrigBits::N100Low)){
+                if(RAT::BitManip::TestBit(rEV.GetTrigType(), RAT::DU::TrigBits::N100Low) && !RAT::BitManip::TestBit(rEV.GetTrigType(), RAT::DU::TrigBits::Pedestal)){
                     htrigger.Fill("N100L", 1);
                 }
-                if(RAT::BitManip::TestBit(rEV.GetTrigType(), RAT::DU::TrigBits::N100Med)){
+                if(RAT::BitManip::TestBit(rEV.GetTrigType(), RAT::DU::TrigBits::N100Med) && !RAT::BitManip::TestBit(rEV.GetTrigType(), RAT::DU::TrigBits::Pedestal)){
                     hnhits_N100M.Fill(rEV.GetNhits()); 
                     htotalQ_N100M.Fill( rEV.GetTotalCharge() );
                     htrigger.Fill("N100M", 1);
                 }
-                if(RAT::BitManip::TestBit(rEV.GetTrigType(), RAT::DU::TrigBits::N100High)){
+                if(RAT::BitManip::TestBit(rEV.GetTrigType(), RAT::DU::TrigBits::N100High) && !RAT::BitManip::TestBit(rEV.GetTrigType(), RAT::DU::TrigBits::Pedestal)){
                     hnhits_N100H.Fill(rEV.GetNhits()); 
                     htotalQ_N100H.Fill( rEV.GetTotalCharge() );
                     htrigger.Fill("N100H", 1);
                 }
-                if(RAT::BitManip::TestBit(rEV.GetTrigType(), RAT::DU::TrigBits::N20)){
+                if(RAT::BitManip::TestBit(rEV.GetTrigType(), RAT::DU::TrigBits::N20) && !RAT::BitManip::TestBit(rEV.GetTrigType(), RAT::DU::TrigBits::Pedestal)){
                     hnhits_N20.Fill(rEV.GetNhits()); 
                     htotalQ_N20.Fill( rEV.GetTotalCharge() );
                     htrigger.Fill("N20", 1);
                 }
-                if(RAT::BitManip::TestBit(rEV.GetTrigType(), RAT::DU::TrigBits::N20LB)){
+                if(RAT::BitManip::TestBit(rEV.GetTrigType(), RAT::DU::TrigBits::N20LB) && !RAT::BitManip::TestBit(rEV.GetTrigType(), RAT::DU::TrigBits::Pedestal)){
                     htrigger.Fill("N20LB", 1);
                 }
-                if(RAT::BitManip::TestBit(rEV.GetTrigType(), RAT::DU::TrigBits::ESLow)){
+                if(RAT::BitManip::TestBit(rEV.GetTrigType(), RAT::DU::TrigBits::ESLow) && !RAT::BitManip::TestBit(rEV.GetTrigType(), RAT::DU::TrigBits::Pedestal)){
                     htrigger.Fill("ESUML", 1);
                 }
-                if(RAT::BitManip::TestBit(rEV.GetTrigType(), RAT::DU::TrigBits::ESHigh)){
+                if(RAT::BitManip::TestBit(rEV.GetTrigType(), RAT::DU::TrigBits::ESHigh) && !RAT::BitManip::TestBit(rEV.GetTrigType(), RAT::DU::TrigBits::Pedestal)){
                     hnhits_ESUMH.Fill(rEV.GetNhits()); 
                     htotalQ_ESUMH.Fill( rEV.GetTotalCharge() );
                     htrigger.Fill("ESUMH", 1);
                 }
-                if(RAT::BitManip::TestBit(rEV.GetTrigType(), RAT::DU::TrigBits::OWLN)){
+                if(RAT::BitManip::TestBit(rEV.GetTrigType(), RAT::DU::TrigBits::OWLN) && !RAT::BitManip::TestBit(rEV.GetTrigType(), RAT::DU::TrigBits::Pedestal)){
                     htrigger.Fill("OWLN", 1);
                 }
-                if(RAT::BitManip::TestBit(rEV.GetTrigType(), RAT::DU::TrigBits::OWLESLow)){
+                if(RAT::BitManip::TestBit(rEV.GetTrigType(), RAT::DU::TrigBits::OWLESLow) && !RAT::BitManip::TestBit(rEV.GetTrigType(), RAT::DU::TrigBits::Pedestal)){
                     htrigger.Fill("OWLEL", 1);
                 }
-                if(RAT::BitManip::TestBit(rEV.GetTrigType(), RAT::DU::TrigBits::OWLESHigh)){
+                if(RAT::BitManip::TestBit(rEV.GetTrigType(), RAT::DU::TrigBits::OWLESHigh) && !RAT::BitManip::TestBit(rEV.GetTrigType(), RAT::DU::TrigBits::Pedestal)){
                     hnhits_OWLEH.Fill(rEV.GetNhits()); 
                     htotalQ_OWLEH.Fill( rEV.GetTotalCharge() );
                     htrigger.Fill("OWLEH", 1);
@@ -616,6 +618,7 @@ void CreateRunPlots( const std::vector<std::vector<std::string> >& files, bool n
                   hypmt.Fill(pmtpos.Y());
                   hzpmt.Fill(pmtpos.Z());
                   htpmt.Fill((calpmts.GetPMT(ipmt)).GetTime());
+                  hipmt.Fill((calpmts.GetPMT(ipmt)).GetID());
                 }
                       
                 if(rEV.FitResultExists("waterFitter") && rEV.GetFitResult("waterFitter").GetValid()){
@@ -723,6 +726,7 @@ void CreateRunPlots( const std::vector<std::vector<std::string> >& files, bool n
                           hypmtgoodfit.Fill(pmtpos.Y());
                           hzpmtgoodfit.Fill(pmtpos.Z());
                           htpmtgoodfit.Fill((calpmts.GetPMT(ipmt)).GetTime());
+                          hipmtgoodfit.Fill((calpmts.GetPMT(ipmt)).GetID());
                         }
                       } 
                   } else hfitValid.Fill(0.);
@@ -766,6 +770,7 @@ void CreateRunPlots( const std::vector<std::vector<std::string> >& files, bool n
     plot_map["posR3"].SetHist(hposR3);
     plot_map["rpmt"].SetHist(hrpmt);
     plot_map["xpmt"].SetHist(hxpmt);
+    plot_map["ipmt"].SetHist(hipmt);
     plot_map["ypmt"].SetHist(hypmt);
     plot_map["zpmt"].SetHist(hzpmt);
     plot_map["tpmt"].SetHist(htpmt);
@@ -807,6 +812,7 @@ void CreateRunPlots( const std::vector<std::vector<std::string> >& files, bool n
     plot_map["ypmtgoodfit"].SetHist(hypmtgoodfit);
     plot_map["zpmtgoodfit"].SetHist(hzpmtgoodfit);
     plot_map["tpmtgoodfit"].SetHist(htpmtgoodfit);
+    plot_map["ipmtgoodfit"].SetHist(hipmtgoodfit);
     plot_map["beta14goodfit"].SetHist(hbeta14goodfit);
     plot_map["energygoodfit"].SetHist(henergygoodfit);
     plot_map["posxygoodfit"].Set2DHist(hposxygoodfit);
