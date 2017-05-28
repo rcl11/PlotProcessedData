@@ -34,6 +34,8 @@ submit = options.submit
 with open(good_run) as f:
     interesting_runs = f.read().splitlines()
 
+count=0
+
 for run_num in interesting_runs:
     for subrunfile in glob.glob(input_dir+"SNOP*"+str(run_num)+"*.l2.zdab"):
         
@@ -48,11 +50,14 @@ for run_num in interesting_runs:
        
         script.write("cd "+rat_dir+"\n")
         script.write("source "+rat_env+"\n")
-        script.write('rat -b postgres://snoplus:dontestopmenow@pgsql.snopl.us:5400/ratdb -i {0}/SNOP_00000{1}_{2}.l2.zdab mac/processing/water/first_pass_data_cleaning.mac\n'.format(input_dir, run_num, subrun_num))
-        script.write('rat -b postgres://snoplus:dontestopmenow@pgsql.snopl.us:5400/ratdb -i {0}/SNOP_00000{1}_{2}.l2.zdab -o {3}/output_r{1}_s{2} mac/processing/water/second_pass_processing.mac\n'.format(input_dir, run_num, subrun_num, output_dir))
-        script.write('rat -b postgres://snoplus:dontestopmenow@pgsql.snopl.us:5400/ratdb -i {2}/output_r{0}_s{1}.root -o {2}/Processing_r{0}_s{1}_p000 mac/processing/water/third_pass_analysis_processing.mac\n'.format(run_num, subrun_num, output_dir))
+        script.write('rat -i {0}/SNOP_00000{1}_{2}.l2.zdab mac/processing/water/first_pass_data_cleaning.mac\n'.format(input_dir, run_num, subrun_num))
+        script.write('rat -i {0}/SNOP_00000{1}_{2}.l2.zdab -o {3}/output_r{1}_s{2} mac/processing/water/second_pass_processing.mac\n'.format(input_dir, run_num, subrun_num, output_dir))
+        script.write('rat -i {2}/output_r{0}_s{1}.root -o {2}/Processing_r{0}_s{1}_p000 mac/processing/water/third_pass_analysis_processing.mac\n'.format(run_num, subrun_num, output_dir))
         script.write('rm {0}/output_r{1}_s{2}.root\n'.format(output_dir, run_num, subrun_num))
         script.close()
 
         if submit:
+            count+=1
+            #attempt not to overload the servers
+            if(count%10==0): os.system("sleep 60")
             os.system("qsub -cwd -l h_rss=4G,h_vmem=4G -q SL6 process_"+str(run_num)+"_"+str(subrun_num)+".sh")

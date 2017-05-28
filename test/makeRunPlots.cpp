@@ -307,6 +307,7 @@ void CreateRunPlots( const std::vector<std::vector<std::string> >& files, bool n
     TH1D hduration = plot_map["duration"].GetHist(); 
     TH1D htrigger = plot_map["trigger"].GetHist(); 
     TH1D hdataclean = plot_map["dataclean"].GetHist(); 
+    TH1D hdatacleannhit15 = plot_map["datacleannhit15"].GetHist(); 
     TH1D htemp = plot_map["temp"].GetHist(); 
     
     for(unsigned h=0;h<trig_names.size();h++){
@@ -314,8 +315,10 @@ void CreateRunPlots( const std::vector<std::vector<std::string> >& files, bool n
     }
     for(unsigned h=0;h<dataclean_names.size();h++){
       hdataclean.GetXaxis()->SetBinLabel(h+1,dataclean_names[h].c_str());
+      hdatacleannhit15.GetXaxis()->SetBinLabel(h+1,dataclean_names[h].c_str());
     }
     hdataclean.GetXaxis()->SetBinLabel(dataclean_names.size()+1,"allevents");
+    hdatacleannhit15.GetXaxis()->SetBinLabel(dataclean_names.size()+1,"allevents");
   
     int n_cleanevents=0;
     int n_events=0;
@@ -404,9 +407,13 @@ void CreateRunPlots( const std::vector<std::vector<std::string> >& files, bool n
             bool compatibility_cut = (applied_flag & 0b111111111111110) == 0b111111111111110;
             std::bitset<32> cleanbits = std::bitset<32>(flag);
             for(unsigned g=0; g<dataclean_names.size(); g++){
-              if(cleanbits.test(g)) hdataclean.Fill(dataclean_names[g].c_str(),1);
+              if(cleanbits.test(g)) {
+                  hdataclean.Fill(dataclean_names[g].c_str(),1);
+                  if(nhits>=15) hdataclean.Fill(dataclean_names[g].c_str(),1);
+              }
             }
             hdataclean.Fill("allevents",1);
+            hdatacleannhit15.Fill("allevents",1);
             hNEvents_vs_time->Fill(event_time_secs/(60*60),1);
             if(nhits>=15) hNEventsNHit15_vs_time->Fill(event_time_secs/(60*60),1);
             if((dataclean && compatibility_cut) || simulation) {
@@ -582,9 +589,13 @@ void CreateRunPlots( const std::vector<std::vector<std::string> >& files, bool n
               //Below line may need changing with new PR fixing which pass this works for
               std::bitset<32> cleanbits = std::bitset<32> (rEV.GetDataCleaningFlags().GetFlags(0).GetULong64_t(0));
               for(unsigned g=0; g<dataclean_names.size(); g++){
-                if(cleanbits.test(g)) hdataclean.Fill(dataclean_names[g].c_str(),1);
+                if(cleanbits.test(g)) {
+                    hdataclean.Fill(dataclean_names[g].c_str(),1);
+                    if(rEV.GetNhits()>=15) hdatacleannhit15.Fill(dataclean_names[g].c_str(),1);
+                }
               }
               hdataclean.Fill("allevents",1);
+              hdatacleannhit15.Fill("allevents",1);
               
               hNEvents_vs_time->Fill(event_time_secs/(60*60),1);
               if(rEV.GetNhits()>=15) hNEventsNHit15_vs_time->Fill(event_time_secs/(60*60),1);
@@ -887,6 +898,7 @@ void CreateRunPlots( const std::vector<std::vector<std::string> >& files, bool n
     plot_map["duration"].SetHist(hduration);
     plot_map["trigger"].SetHist(htrigger);
     plot_map["dataclean"].SetHist(hdataclean);
+    plot_map["datacleannhit15"].SetHist(hdatacleannhit15);
     plot_map["temp"].SetHist(htemp);
     plot_map["nhitstemp"].Set2DHist(hnhitstemp);
   

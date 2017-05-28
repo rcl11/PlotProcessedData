@@ -34,6 +34,7 @@ nice_labels = {
     'temp': 'cavity temp',
     'fitValid' : 'Fit validity',
     'rpmt' : 'PMT R position',
+    'ipmt' : 'PMT ID',
     'tpmt' : 'PMT time',
     'xpmt' : 'PMT x position',
     'ypmt' : 'PMT y position',
@@ -100,7 +101,7 @@ for filename in glob.glob(options.dirname+"/"+"*.png"):
  #     subrun_number = j.findall(filename)[0]
 
     t = re.compile("[0-9*]/(.*)_r[0-9]*_to_")
-    q = re.compile("[0-9*]/(.*)_r")
+    q = re.compile("[0-9*]/(.*)_r[0-9*]")
     #plot type    
     if "_to_" in filename:
         data['run number'] = "sum of runs"
