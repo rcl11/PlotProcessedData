@@ -6,6 +6,7 @@
 #include <RAT/DU/Utility.hh>
 #include <RAT/DS/Meta.hh>
 #include <RAT/BitManip.hh>
+#include <RAT/DB.hh>
 
 #include <TH1D.h>
 #include <TH2D.h>
@@ -561,6 +562,9 @@ void CreateRunPlots( const std::vector<std::vector<std::string> >& files, bool n
           }
           run_duration += (end_days-start_days)*60*60*24 + (end_secs-start_secs) + ((end_nsecs-start_nsecs) * 1E-9);
         } else {
+          RAT::DB::Get()->SetAirplaneModeStatus(true);
+          RAT::DB::Get()->SetDefaultPlaneLockStatus(false);;
+
           RAT::DU::DSReader dsReader( runfiles[subrun] );
           int start_days = 0;
           int start_secs = 0;
