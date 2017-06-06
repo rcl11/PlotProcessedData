@@ -195,15 +195,19 @@ void CreateRunPlots( const std::vector<std::vector<std::string> >& files, bool n
   //This should really go inside the class but im feeling hacky today
   TH1D htrigger_total = plot_map_totals["trigger"].GetHist();
   TH1D hdataclean_total = plot_map_totals["dataclean"].GetHist();
+  TH1D hdatacleannhit15_total = plot_map_totals["datacleannhit15"].GetHist();
   for(unsigned h=0;h<trig_names.size();h++){
     htrigger_total.GetXaxis()->SetBinLabel(h+1,trig_names[h].c_str());
   }
   for(unsigned h=0;h<dataclean_names.size();h++){
     hdataclean_total.GetXaxis()->SetBinLabel(h+1,dataclean_names[h].c_str());
+    hdatacleannhit15_total.GetXaxis()->SetBinLabel(h+1,dataclean_names[h].c_str());
   }
   hdataclean_total.GetXaxis()->SetBinLabel(dataclean_names.size()+1,"allevents");
+  hdatacleannhit15_total.GetXaxis()->SetBinLabel(dataclean_names.size()+1,"allevents");
   plot_map_totals["trigger"].SetHist(htrigger_total);
   plot_map_totals["dataclean"].SetHist(hdataclean_total);
+  plot_map_totals["datacleannhit15"].SetHist(hdatacleannhit15_total);
 
   std::vector<std::string> allruns;
   for(unsigned i=0; i<files.size(); ++i){
@@ -410,7 +414,7 @@ void CreateRunPlots( const std::vector<std::vector<std::string> >& files, bool n
             for(unsigned g=0; g<dataclean_names.size(); g++){
               if(cleanbits.test(g)) {
                   hdataclean.Fill(dataclean_names[g].c_str(),1);
-                  if(nhits>=15) hdataclean.Fill(dataclean_names[g].c_str(),1);
+                  if(nhits>=15) hdatacleannhit15.Fill(dataclean_names[g].c_str(),1);
               }
             }
             hdataclean.Fill("allevents",1);
@@ -589,7 +593,7 @@ void CreateRunPlots( const std::vector<std::vector<std::string> >& files, bool n
               if(iEntry == 0 && iEv == 0 && i == 0 && subrun == 0) start_run_time = event_time_secs;
               if(iEntry == dsReader.GetEntryCount()-1 && iEv == rDS.GetEVCount()-1 && i == files.size()-1 && subrun == runfiles.size()-1) end_run_time = event_time_secs;
               n_events++;
-              if(rEV.GetNhits()>=15) n_events++;
+              if(rEV.GetNhits()>=15) n_eventsNHit15++;
               //Below line may need changing with new PR fixing which pass this works for
               std::bitset<32> cleanbits = std::bitset<32> (rEV.GetDataCleaningFlags().GetFlags(0).GetULong64_t(0));
               for(unsigned g=0; g<dataclean_names.size(); g++){
