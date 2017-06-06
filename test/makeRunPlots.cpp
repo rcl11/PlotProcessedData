@@ -414,7 +414,7 @@ void CreateRunPlots( const std::vector<std::vector<std::string> >& files, bool n
               }
             }
             hdataclean.Fill("allevents",1);
-            hdatacleannhit15.Fill("allevents",1);
+            if(nhits>=15) hdatacleannhit15.Fill("allevents",1);
             hNEvents_vs_time->Fill(event_time_secs/(60*60),1);
             if(nhits>=15) hNEventsNHit15_vs_time->Fill(event_time_secs/(60*60),1);
             if((dataclean && compatibility_cut) || simulation) {
@@ -599,7 +599,7 @@ void CreateRunPlots( const std::vector<std::vector<std::string> >& files, bool n
                 }
               }
               hdataclean.Fill("allevents",1);
-              hdatacleannhit15.Fill("allevents",1);
+              if(rEV.GetNhits()>=15) hdatacleannhit15.Fill("allevents",1);
               
               hNEvents_vs_time->Fill(event_time_secs/(60*60),1);
               if(rEV.GetNhits()>=15) hNEventsNHit15_vs_time->Fill(event_time_secs/(60*60),1);
@@ -773,7 +773,7 @@ void CreateRunPlots( const std::vector<std::vector<std::string> >& files, bool n
                         hposR3goodfit.Fill(pow(R,3)/pow(6005.3,3));
                         hitrgoodfit.Fill(rEV.GetClassifierResult("ITR:waterFitter").GetClassification("ITR"));
                         if(rvertex.ValidEnergy() && rvertex.ContainsEnergy()) {
-                            henergy.Fill(rvertex.GetEnergy());
+                            henergygoodfit.Fill(rvertex.GetEnergy());
                             if(rvertex.ValidPositiveEnergyError()){
                               //Seems to be just filled with 1s for EnergyPromptLookup
                               herrenergygoodfit.Fill(rvertex.GetEnergy(), rvertex.GetPositiveEnergyError());

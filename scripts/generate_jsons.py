@@ -31,6 +31,7 @@ nice_labels = {
     'duration' : 'Run duration',
     'trigger' : 'Trigger word',
     'dataclean' : 'Data clean',
+    'datacleannhit15' : 'Data clean nhit15',
     'temp': 'cavity temp',
     'fitValid' : 'Fit validity',
     'rpmt' : 'PMT R position',
