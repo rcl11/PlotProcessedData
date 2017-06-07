@@ -54,5 +54,5 @@ for simulation in simulations:
         if submit:
             count+=1
             #attempt not to overload the servers
-            if(count%10==0): os.system("sleep 60")
+            if(count%10==0): os.system("sleep 1800")
             os.system("qsub -cwd -l h_rss=4G,h_vmem=4G -q SL6 produce_"+str(simulation)+"_"+str(run_num)+".sh")
