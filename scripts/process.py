@@ -50,10 +50,12 @@ for run_num in interesting_runs:
        
         script.write("cd "+rat_dir+"\n")
         script.write("source "+rat_env+"\n")
+        script.write("mkdir /tmp/{0}_{1}\n".format(run_num,subrun_num))
+        script.write("cd /tmp/{0}_{1}\n".format(run_num,subrun_num))
         script.write('rat -i {0}/SNOP_0000{1}_{2}.l2.zdab mac/processing/water/first_pass_data_cleaning.mac\n'.format(input_dir, run_num, subrun_num))
         script.write('rat -i {0}/SNOP_0000{1}_{2}.l2.zdab -o {3}/output_r{1}_s{2} mac/processing/water/second_pass_processing.mac\n'.format(input_dir, run_num, subrun_num, output_dir))
         script.write('rat -i {2}/output_r{0}_s{1}.root -o {2}/Processing_r{0}_s{1}_p000 mac/processing/water/third_pass_analysis_processing.mac\n'.format(run_num, subrun_num, output_dir))
-        script.write('rm {0}/output_r{1}_s{2}.root\n'.format(output_dir, run_num, subrun_num))
+        script.write("cp /tmp/{0}_{1}/Processing_r{0}_s{1}_p000* {2}/\n".format(run_num,subrun_num,output_dir))
         script.close()
 
         if submit:

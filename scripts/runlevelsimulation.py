@@ -48,7 +48,10 @@ for simulation in simulations:
        
         script.write("cd "+rat_dir+"\n")
         script.write("source "+rat_env+"\n")
-        script.write('rat -r {0} mac/production/water/{1}.mac -o {1}_r{0}_s000_p000\n'.format(run_num,simulation))
+        script.write("mkdir /tmp/{0}_{1}\n".format(run_num,simulation))
+        script.write("cd /tmp/{0}_{1}\n".format(run_num,simulation))
+        script.write('rat -r {0} {2}/mac/production/water/{1}.mac -o {1}_r{0}_s000_p000\n'.format(run_num,simulation,rat_dir))
+        script.write("cp /tmp/{0}_{1}/{1}_r{0}_s000_p000* {2}/\n".format(run_num,simulation,rat_dir))
         script.close()
 
         if submit:
