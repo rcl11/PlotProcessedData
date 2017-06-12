@@ -251,6 +251,9 @@ void CreateRunPlots( const std::vector<std::vector<std::string> >& files, bool n
     TH2D herrresy = plot_map["errresy"].Get2DHist(); 
     TH2D herrposz = plot_map["errposz"].Get2DHist(); 
     TH2D herrresz = plot_map["errresz"].Get2DHist(); 
+    TH2D herrxresR = plot_map["errxresR"].Get2DHist(); 
+    TH2D herryresR = plot_map["erryresR"].Get2DHist(); 
+    TH2D herrzresR = plot_map["errzresR"].Get2DHist(); 
     TH2D herrposxnhits = plot_map["errposxnhits"].Get2DHist(); 
     TH2D herrposxitr = plot_map["errposxitr"].Get2DHist(); 
     TH2D herrposynhits = plot_map["errposynhits"].Get2DHist(); 
@@ -292,6 +295,9 @@ void CreateRunPlots( const std::vector<std::vector<std::string> >& files, bool n
     TH2D herrresygoodfit = plot_map["errresygoodfit"].Get2DHist(); 
     TH2D herrposzgoodfit = plot_map["errposzgoodfit"].Get2DHist(); 
     TH2D herrreszgoodfit = plot_map["errreszgoodfit"].Get2DHist(); 
+    TH2D herrxresRgoodfit = plot_map["errxresRgoodfit"].Get2DHist(); 
+    TH2D herryresRgoodfit = plot_map["erryresRgoodfit"].Get2DHist(); 
+    TH2D herrzresRgoodfit = plot_map["errzresRgoodfit"].Get2DHist(); 
     TH2D herrposxnhitsgoodfit = plot_map["errposxnhitsgoodfit"].Get2DHist(); 
     TH2D herrposxitrgoodfit = plot_map["errposxitrgoodfit"].Get2DHist(); 
     TH2D herrposynhitsgoodfit = plot_map["errposynhitsgoodfit"].Get2DHist(); 
@@ -524,6 +530,9 @@ void CreateRunPlots( const std::vector<std::vector<std::string> >& files, bool n
                     herrresx.Fill(fabs(posx-mcposx),posxPosError);
                     herrresy.Fill(fabs(posy-mcposy),posyPosError);
                     herrresz.Fill(fabs(posz-mcposz),poszPosError);
+                    herrxresR.Fill(sqrt(pow((posx-mcposx),2) + pow((posy-mcposy),2) + pow((posz-mcposz),2) ),posxPosError);
+                    herryresR.Fill(sqrt(pow((posx-mcposx),2) + pow((posy-mcposy),2) + pow((posz-mcposz),2) ),posyPosError);
+                    herrzresR.Fill(sqrt(pow((posx-mcposx),2) + pow((posy-mcposy),2) + pow((posz-mcposz),2) ),poszPosError);
                 }
                 herrposxnhits.Fill(nhits,posxPosError);
                 herrposxitr.Fill(itr,posxPosError);
@@ -562,6 +571,9 @@ void CreateRunPlots( const std::vector<std::vector<std::string> >& files, bool n
                       herrresxgoodfit.Fill(fabs(posx-mcposx),posxPosError);
                       herrresygoodfit.Fill(fabs(posy-mcposy),posyPosError);
                       herrreszgoodfit.Fill(fabs(posz-mcposz),poszPosError);
+                      herrxresRgoodfit.Fill(sqrt(pow((posx-mcposx),2) + pow((posy-mcposy),2) + pow((posz-mcposz),2) ),posxPosError);
+                      herryresRgoodfit.Fill(sqrt(pow((posx-mcposx),2) + pow((posy-mcposy),2) + pow((posz-mcposz),2) ),posyPosError);
+                      herrzresRgoodfit.Fill(sqrt(pow((posx-mcposx),2) + pow((posy-mcposy),2) + pow((posz-mcposz),2) ),poszPosError);
                   }
                   herrposxnhitsgoodfit.Fill(nhits,posxPosError);
                   herrposxitrgoodfit.Fill(itr,posxPosError);
@@ -721,9 +733,13 @@ void CreateRunPlots( const std::vector<std::vector<std::string> >& files, bool n
                       herrposy.Fill(rvertex.GetPosition().Y(), rvertex.GetPositivePositionError().y());
                       herrposz.Fill(rvertex.GetPosition().Z(), rvertex.GetPositivePositionError().z());
                       if(simulation){
+                        double Rres = sqrt( pow(rvertex.GetPosition().X() - part1.GetPosition().X(),2) + pow(rvertex.GetPosition().Y() - part1.GetPosition().Y(),2) + pow(rvertex.GetPosition().Z() - part1.GetPosition().Z(),2));   
                         herrresx.Fill(fabs(rvertex.GetPosition().X() - part1.GetPosition().X()), rvertex.GetPositivePositionError().x());
                         herrresy.Fill(fabs(rvertex.GetPosition().Y() - part1.GetPosition().Y()), rvertex.GetPositivePositionError().y());
                         herrresz.Fill(fabs(rvertex.GetPosition().Z() - part1.GetPosition().Z()), rvertex.GetPositivePositionError().z());
+                        herrxresR.Fill(Rres, rvertex.GetPositivePositionError().x());
+                        herryresR.Fill(Rres, rvertex.GetPositivePositionError().y());
+                        herrzresR.Fill(Rres, rvertex.GetPositivePositionError().z());
                       }
                       herrposxnhits.Fill(rEV.GetNhits(), rvertex.GetPositivePositionError().x());
                       herrposxitr.Fill(rEV.GetClassifierResult("ITR:waterFitter").GetClassification("ITR"), rvertex.GetPositivePositionError().x());
@@ -773,9 +789,13 @@ void CreateRunPlots( const std::vector<std::vector<std::string> >& files, bool n
                           herrposygoodfit.Fill(rvertex.GetPosition().Y(), rvertex.GetPositivePositionError().y());
                           herrposzgoodfit.Fill(rvertex.GetPosition().Z(), rvertex.GetPositivePositionError().z());
                           if(simulation){
+                            double Rres = sqrt( pow(rvertex.GetPosition().X() - part1.GetPosition().X(),2) + pow(rvertex.GetPosition().Y() - part1.GetPosition().Y(),2) + pow(rvertex.GetPosition().Z() - part1.GetPosition().Z(),2));   
                             herrresxgoodfit.Fill(fabs(rvertex.GetPosition().X() - part1.GetPosition().X()), rvertex.GetPositivePositionError().x());
                             herrresygoodfit.Fill(fabs(rvertex.GetPosition().Y() - part1.GetPosition().Y()), rvertex.GetPositivePositionError().y());
                             herrreszgoodfit.Fill(fabs(rvertex.GetPosition().Z() - part1.GetPosition().Z()), rvertex.GetPositivePositionError().z());
+                            herrxresRgoodfit.Fill(Rres, rvertex.GetPositivePositionError().x());
+                            herryresRgoodfit.Fill(Rres, rvertex.GetPositivePositionError().y());
+                            herrzresRgoodfit.Fill(Rres, rvertex.GetPositivePositionError().z());
                           }
                           herrposxnhitsgoodfit.Fill(rEV.GetNhits(), rvertex.GetPositivePositionError().x());
                           herrposxitrgoodfit.Fill(rEV.GetClassifierResult("ITR:waterFitter").GetClassification("ITR"), rvertex.GetPositivePositionError().x());
@@ -886,6 +906,9 @@ void CreateRunPlots( const std::vector<std::vector<std::string> >& files, bool n
     plot_map["errresx"].Set2DHist(herrresx);
     plot_map["errresy"].Set2DHist(herrresy);
     plot_map["errresz"].Set2DHist(herrresz);
+    plot_map["errxresR"].Set2DHist(herrxresR);
+    plot_map["erryresR"].Set2DHist(herryresR);
+    plot_map["errzresR"].Set2DHist(herrzresR);
     plot_map["errposxnhits"].Set2DHist(herrposxnhits);
     plot_map["errposxitr"].Set2DHist(herrposxitr);
     plot_map["errposynhits"].Set2DHist(herrposynhits);
@@ -927,6 +950,9 @@ void CreateRunPlots( const std::vector<std::vector<std::string> >& files, bool n
     plot_map["errresxgoodfit"].Set2DHist(herrresxgoodfit);
     plot_map["errresygoodfit"].Set2DHist(herrresygoodfit);
     plot_map["errreszgoodfit"].Set2DHist(herrreszgoodfit);
+    plot_map["errxresRgoodfit"].Set2DHist(herrxresRgoodfit);
+    plot_map["erryresRgoodfit"].Set2DHist(herryresRgoodfit);
+    plot_map["errzresRgoodfit"].Set2DHist(herrzresRgoodfit);
     plot_map["errposxnhitsgoodfit"].Set2DHist(herrposxnhitsgoodfit);
     plot_map["errposxitrgoodfit"].Set2DHist(herrposxitrgoodfit);
     plot_map["errposynhitsgoodfit"].Set2DHist(herrposynhitsgoodfit);
