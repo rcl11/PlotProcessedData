@@ -5,6 +5,7 @@
 #include <TLatex.h>
 #include <TColor.h>
 #include <iostream>
+#include <string>
 #include "../interface/THPlot.hh"
 
 
@@ -167,18 +168,18 @@ int THPlot::GeneratePlot() {
       subruns = "all";  
       for(unsigned i=0; i<run_info_.first.size(); i++){
         if(i==0) {
-            //remove preceding r and 0s, may need to allow extra digit one day!
-            runs.append(((run_info_.first)[i]).erase(0,5));
+            //remove preceding r and 0s
+            runs.append(((run_info_.first)[i]).erase(0,(run_info_.first)[i].find_first_not_of("r0")));
             runs.append("-");
         }
         if(i==run_info_.first.size()-1) {
-            runs.append((run_info_.first)[i].erase(0,5));
+            runs.append(((run_info_.first)[i]).erase(0,(run_info_.first)[i].find_first_not_of("r0")));
         }
       }
     } else {
-      runs = ((run_info_.first)[0]).erase(0,5);  
+      runs = ((run_info_.first)[0]).erase(0,(run_info_.first)[0].find_first_not_of("r0"));  
       for(unsigned i=0; i<run_info_.second.size(); i++){
-         //remove preceding s and 0s, may need to allow extra digit one day!
+         //remove preceding s and 0s
          subruns.append(((run_info_.second)[i]).erase(0,2));
          if(i!=run_info_.second.size()-1) subruns.append(",");
       }
