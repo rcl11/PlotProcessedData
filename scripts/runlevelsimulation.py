@@ -34,7 +34,8 @@ with open(filelist) as f:
 
 q = re.compile("_r(.*)_s")
 
-simulations = ['Tl208','Tl208_av','Bi214','Bi214_av']
+#simulations = ['Tl208','Tl208_av','Bi214','Bi214_av']
+simulations = ['Tl208','Tl208_exwater','Bi214','Bi214_exwater']
 count = 0
 for simulation in simulations:
     for run in interesting_runs:
@@ -57,5 +58,5 @@ for simulation in simulations:
         if submit:
             count+=1
             #attempt not to overload the servers
-            if(count%10==0): os.system("sleep 1800")
+            if(count%10==0): os.system("sleep 600")
             os.system("qsub -cwd -l h_rss=4G,h_vmem=4G -q SL6 produce_"+str(simulation)+"_"+str(run_num)+".sh")
