@@ -658,8 +658,10 @@ void CreateRunPlots( const std::vector<std::vector<std::string> >& files, bool n
             for( size_t iEv = 0; iEv < rDS.GetEVCount(); iEv++ )
             {   
               RAT::DS::EV rEV = rDS.GetEV(iEv);
-              RAT::DS::MC rMC = rDS.GetMC();
-              const RAT::DS::MCParticle& part1 = rMC.GetMCParticle(0);
+              RAT::DS::MC rMC;
+              if(simulation) rMC = rDS.GetMC();
+              RAT::DS::MCParticle part1;
+              if(simulation) part1 = rMC.GetMCParticle(0);
               if(iEntry == 0 && iEv == 0 ) start_time = rEV.GetUniversalTime();
               if(iEntry == dsReader.GetEntryCount()-1 && iEv == rDS.GetEVCount()-1) end_time = rEV.GetUniversalTime();
               double event_time_secs = ((rEV.GetUniversalTime()).GetDays())*60*60*24 + ((rEV.GetUniversalTime()).GetSeconds()) + ((rEV.GetUniversalTime()).GetNanoSeconds() * 1E-9);
