@@ -36,6 +36,7 @@ q = re.compile("_r(.*)_s")
 
 #simulations = ['Tl208','Tl208_av','Bi214','Bi214_av']
 simulations = ['Tl208','Tl208_exwater','Bi214','Bi214_exwater']
+#simulations = ['Tl208']
 count = 0
 for simulation in simulations:
     for run in interesting_runs:
@@ -51,8 +52,8 @@ for simulation in simulations:
         script.write("source "+rat_env+"\n")
         script.write("mkdir /tmp/{0}_{1}\n".format(run_num,simulation))
         script.write("cd /tmp/{0}_{1}\n".format(run_num,simulation))
-        script.write('rat -r {0} {2}/mac/production/water/{1}.mac -o {1}_r{0}_s000_p000\n'.format(run_num,simulation,rat_dir))
-        script.write("cp /tmp/{0}_{1}/{1}_r{0}_s000_p000* {2}/\n".format(run_num,simulation,rat_dir))
+        script.write('rat -r {0} {2}/mac/run-by-run-production/water/{1}.mac -o {1}_r{0}_s000_p000\n'.format(run_num,simulation,rat_dir))
+        script.write("cp /tmp/{0}_{1}/{1}_r{0}_s000_p000* {2}/\n".format(run_num,simulation,output_dir))
         script.close()
 
         if submit:

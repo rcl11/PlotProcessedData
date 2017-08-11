@@ -52,14 +52,14 @@ for run_num in interesting_runs:
         script.write("source "+rat_env+"\n")
         script.write("mkdir /tmp/{0}_{1}\n".format(run_num,subrun_num))
         script.write("cd /tmp/{0}_{1}\n".format(run_num,subrun_num))
-        script.write('rat -i {0}/SNOP_0000{1}_{2}.l2.zdab mac/processing/water/first_pass_data_cleaning.mac\n'.format(input_dir, run_num, subrun_num))
-        script.write('rat -i {0}/SNOP_0000{1}_{2}.l2.zdab -o {3}/output_r{1}_s{2} mac/processing/water/second_pass_processing.mac\n'.format(input_dir, run_num, subrun_num, output_dir))
-        script.write('rat -i {2}/output_r{0}_s{1}.root -o {2}/Processing_r{0}_s{1}_p000 mac/processing/water/third_pass_analysis_processing.mac\n'.format(run_num, subrun_num, output_dir))
+        script.write('rat -i {0}/SNOP_0000{1}_{2}.l2.zdab {3}/mac/processing/water/first_pass_data_cleaning.mac\n'.format(input_dir, run_num, subrun_num, rat_dir))
+        script.write('rat -i {0}/SNOP_0000{1}_{2}.l2.zdab -o {3}/output_r{1}_s{2} {4}/mac/processing/water/second_pass_processing.mac\n'.format(input_dir, run_num, subrun_num, output_dir, rat_dir))
+        script.write('rat -i {2}/output_r{0}_s{1}.root -o {2}/Processing_r{0}_s{1}_p000 {3}/mac/processing/water/third_pass_analysis_processing.mac\n'.format(run_num, subrun_num, output_dir,rat_dir))
         script.write("cp /tmp/{0}_{1}/Processing_r{0}_s{1}_p000* {2}/\n".format(run_num,subrun_num,output_dir))
         script.close()
 
         if submit:
             count+=1
             #attempt not to overload the servers
-            if(count%10==0): os.system("sleep 1800")
+            if(count%10==0): os.system("sleep 180")
             os.system("qsub -cwd -l h_rss=4G,h_vmem=4G -q SL6 process_"+str(run_num)+"_"+str(subrun_num)+".sh")
