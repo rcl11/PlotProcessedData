@@ -4,14 +4,14 @@ Repository to save code for making analysis plots on the new data
 Current workflow is:
 
 Processed files are downloaded in some format to /data/snoplus/OfficialProcessing
+
+If ntuple files are available, use these for fastest plotting.
+
+Otherwise the code does support plotting from ratds files and will also allow plotting of PMT related variables.
+
+If desired, conversion of ratds files into ntuples can be done using scripts/root_converter.py.
     
-    - if ntuple files are available, use these for fastest plotting.
-    
-    - Otherwise the code does support plotting from ratds files and will also allow plotting of PMT related variables.
-    
-    - If desired, conversion of ratds files into ntuples can be done using scripts/root_converter.py.
-    
-    - If only zdabs are available, processing of these into both ratds and root files can be run on the batch using process.py script.
+If only zdabs are available, processing of these into both ratds and root files can be run on the batch using process.py script.
     
 The plotting takes either a list of ratds or ntuple files, one file per line (as e.g. result of `ls /data/snoplus/OfficialProcessing/processed_6.2.3/*_ntuple.root &> filelist_ntuple.dat`. Code assumes default is ratds files and ntuples will have string "ntuple" in the name of the filelist.
 
